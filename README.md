@@ -48,27 +48,27 @@ The platform provides two primary modes of operation:
 ```mermaid
 flowchart TD
     subgraph DataSources["Data Sources & Ingestion"]
-        GS["Google Sheets (GViz / CSV / v4 API)"]
-        MD["Static Reference Dataset (15 Teams)"]
-        SIM["Live Event Simulator (State Injector)"]
+        GS["Google Sheets — GViz / CSV / API"]
+        MD["Static Reference Dataset — 15 Teams"]
+        SIM["Live Event Simulator — State Injector"]
     end
 
     subgraph CoreEngine["Leaderboard Core Engine"]
         Normalizer["Data Normalizer & Sanitizer"]
         RankEngine["Rank Delta & Sorting Engine"]
         AudioEngine["Web Audio Synthesizer"]
-        Store["State Management (Teams, Status, Mode)"]
+        Store["State Management — Teams, Status, Mode"]
     end
 
     subgraph Views["Presentation Views"]
         Live2D["Live 2D HUD & Stepped Podium"]
         Stage3D["Three.js 3D Stadium Ceremony Stage"]
-        Table["12-Column Contender Table (#4 - #15)"]
+        Table["12-Column Contender Table — Rank 4 to 15"]
     end
 
-    GS -->|Periodic Fetch (3500ms)| Normalizer
+    GS -->|Periodic Fetch: 3500ms| Normalizer
     MD -->|Initial Load| Normalizer
-    SIM -->|Simulated Surge / Swap| Normalizer
+    SIM -->|Simulated Surge or Swap| Normalizer
 
     Normalizer --> RankEngine
     RankEngine -->|Rank Delta Detected| AudioEngine
