@@ -1,0 +1,2181 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="Kinetics Logo.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    
+    <!-- SEO & Metadata -->
+    <title>Kinetics Hackathon 2026 — Live AI & Robotics Leaderboard</title>
+    <meta name="description" content="Real-time autonomous AI, ML & Robotics competition leaderboard command center dashboard for Kinetics Hackathon 2026." />
+    <meta name="theme-color" content="#07080b" />
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              charcoal: {
+                900: '#07080b',
+                800: '#0d1017',
+                700: '#161b26',
+              },
+              copper: {
+                light: '#fbbf24',
+                DEFAULT: '#f59e0b',
+                dark: '#d97706',
+                deep: '#b45309',
+              }
+            },
+            fontFamily: {
+              orbitron: ['"Times New Roman"', 'Times', 'serif'],
+              rajdhani: ['"Times New Roman"', 'Times', 'serif'],
+              mono: ['"Times New Roman"', 'Times', 'serif'],
+              sans: ['"Times New Roman"', 'Times', 'serif'],
+              serif: ['"Times New Roman"', 'Times', 'serif'],
+            }
+          }
+        }
+      }
+    </script>
+
+    <!-- Three.js 3D WebGL Engine -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <!-- Spline Viewer Web Component -->
+    <script type="module" src="https://unpkg.com/@splinetool/viewer@1.9.82/build/spline-viewer.js"></script>
+
+    <!-- React 18, Babel for Standalone Preview -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+      :root {
+        --font-orbitron: 'Times New Roman', Times, serif;
+        --font-rajdhani: 'Times New Roman', Times, serif;
+        --font-mono: 'Times New Roman', Times, serif;
+        --font-sans: 'Times New Roman', Times, serif;
+        font-family: 'Times New Roman', Times, serif;
+      }
+
+      *, *::before, *::after, html, body, input, button, select, textarea, span, div, p, h1, h2, h3, h4, h5, h6 {
+        font-family: 'Times New Roman', Times, serif !important;
+      }
+
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: #07080b;
+        color: #ffffff;
+        font-family: 'Times New Roman', Times, serif !important;
+        overflow-x: hidden;
+        user-select: none;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #090b10;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #2a3142;
+        border-radius: 3px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #f59e0b;
+      }
+
+      .bg-scanlines {
+        background: linear-gradient(
+          rgba(18, 16, 16, 0) 50%,
+          rgba(0, 0, 0, 0.25) 50%
+        ), linear-gradient(
+          90deg,
+          rgba(255, 0, 0, 0.02),
+          rgba(0, 255, 0, 0.01),
+          rgba(0, 0, 255, 0.02)
+        );
+        background-size: 100% 3px, 6px 100%;
+      }
+
+      .bg-radial-vignette {
+        background: radial-gradient(
+          circle at center,
+          transparent 40%,
+          rgba(7, 8, 11, 0.85) 90%,
+          #07080b 100%
+        );
+      }
+
+      @keyframes fadeIn {
+        from { opacity: 0; transform: scale(0.97); }
+        to { opacity: 1; transform: scale(1); }
+      }
+
+      @keyframes slideLeft {
+        from { transform: translateX(100%); }
+        to { transform: translateX(0); }
+      }
+
+      .animate-fadeIn {
+        animation: fadeIn 0.25s ease-out forwards;
+      }
+
+      .animate-slideLeft {
+        animation: slideLeft 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+    </style>
+  </head>
+  <body class="bg-[#07080b] text-white">
+    <div id="root"></div>
+
+    <!-- Standalone self-contained ES Module React loader -->
+    <script type="text/babel">
+      const { useState, useEffect, useRef, useCallback } = React;
+
+      // Web Audio Synthesizer
+      class AudioSynthesizer {
+        constructor() {
+          this.ctx = null;
+          this.isMuted = false;
+        }
+        getContext() {
+          if (this.isMuted) return null;
+          if (!this.ctx && typeof window !== 'undefined') {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (AudioCtx) this.ctx = new AudioCtx();
+          }
+          if (this.ctx && this.ctx.state === 'suspended') {
+            this.ctx.resume().catch(() => {});
+          }
+          return this.ctx;
+        }
+        playRankUp() {
+          const ctx = this.getContext();
+          if (!ctx) return;
+          try {
+            const now = ctx.currentTime;
+            [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+              const osc = ctx.createOscillator();
+              const gain = ctx.createGain();
+              osc.type = 'triangle';
+              osc.frequency.setValueAtTime(freq, now + i * 0.04);
+              gain.gain.setValueAtTime(0.03, now + i * 0.04);
+              gain.gain.exponentialRampToValueAtTime(0.0001, now + i * 0.04 + 0.25);
+              osc.connect(gain);
+              gain.connect(ctx.destination);
+              osc.start(now + i * 0.04);
+              osc.stop(now + i * 0.04 + 0.25);
+            });
+          } catch {}
+        }
+        playRankDown() {
+          const ctx = this.getContext();
+          if (!ctx) return;
+          try {
+            const now = ctx.currentTime;
+            [440, 349.23, 261.63].forEach((freq, i) => {
+              const osc = ctx.createOscillator();
+              const gain = ctx.createGain();
+              osc.type = 'sine';
+              osc.frequency.setValueAtTime(freq, now + i * 0.05);
+              gain.gain.setValueAtTime(0.03, now + i * 0.05);
+              gain.gain.exponentialRampToValueAtTime(0.0001, now + i * 0.05 + 0.3);
+              osc.connect(gain);
+              gain.connect(ctx.destination);
+              osc.start(now + i * 0.05);
+              osc.stop(now + i * 0.05 + 0.3);
+            });
+          } catch {}
+        }
+      }
+      const soundFx = new AudioSynthesizer();
+
+      // Initial Reference Teams (Real Hackathon 15-Team Dataset: 975 - 380 pts)
+      const HACKATHON_SHEET_DATASET_TEAMS = [
+        {
+          id: 'team-aetherbots',
+          rank: 1,
+          previousRank: 1,
+          teamName: 'AETHERBOTS',
+          institution: 'NIT Delhi',
+          institutionCode: 'NIT Delhi',
+          score: 975,
+          previousScore: 975,
+          metricLabel: '12 Tasks • Task Score: 980 (-5 pen)',
+          metricValue: '12 Tasks',
+          metricType: 'lidar',
+          round: 'RND 4',
+          rankChange: 0,
+          status: 'ACTIVE'
+        },
+        {
+          id: 'team-robovanguard',
+          rank: 2,
+          previousRank: 2,
+          teamName: 'ROBOVANGUARD',
+          institution: 'IIT Delhi',
+          institutionCode: 'IIT Delhi',
+          score: 915,
+          previousScore: 915,
+          metricLabel: '11 Tasks • Task Score: 930 (-15 pen)',
+          metricValue: '11 Tasks',
+          metricType: 'neural',
+          round: 'RND 4',
+          rankChange: 0,
+          status: 'ACTIVE'
+        },
+        {
+          id: 'team-neurodrive',
+          rank: 3,
+          previousRank: 3,
+          teamName: 'NEURODRIVE',
+          institution: 'DTU',
+          institutionCode: 'DTU',
+          score: 870,
+          previousScore: 870,
+          metricLabel: '10 Tasks • Task Score: 890 (-20 pen)',
+          metricValue: '10 Tasks',
+          metricType: 'pointcloud',
+          round: 'RND 4',
+          rankChange: 0,
+          status: 'ACTIVE'
+        },
+        {
+          id: 'team-circuitforge',
+          rank: 4,
+          previousRank: 4,
+          teamName: 'CIRCUITFORGE',
+          institution: 'NSUT',
+          institutionCode: 'NSUT',
+          score: 825,
+          previousScore: 825,
+          metricLabel: '10 Tasks • Task Score: 850 (-25 pen)',
+          metricValue: '10 Tasks',
+          metricType: 'trajectory',
+          round: 'RND 4',
+          rankChange: 0,
+          status: 'ACTIVE'
+        },
+        {
+          id: 'team-mechamind',
+          rank: 5,
+          previousRank: 5,
+          teamName: 'MECHAMIND',
+          institution: 'NIT Delhi',
+          institutionCode: 'NIT Delhi',
+          score: 800,
+          previousScore: 800,
+          metricLabel: '9 Tasks • Task Score: 820 (-20 pen)',
+          metricValue: '9 Tasks',
+          metricType: 'grid',
+          round: 'RND 4',
+          rankChange: 0,
+          status: 'ACTIVE'
+        },
+        {
+          id: 'team-robonexus',
+          rank: 6,
+          previousRank: 6,
+          teamName: 'ROBONEXUS',
+          institution: 'IIT Roorkee',
+          institutionCode: 'IIT Roorkee',
+          score: 765,
+          previousScore: 765,
+          metricLabel: '9 Tasks • Task Score: 780 (-25 pen)',
+          metricValue: '9 Tasks',
+          metricType: 'optimization',
+          round: 'RND 4',
+          rankChange: 0,
+          status: 'ACTIVE'
+        },
+        {
+          id: 'team-autonex',
+          rank: 7,
+          previousRank: 7,
+          teamName: 'AUTONEX',
+          institution: 'BITS Pilani',
+          institutionCode: 'BITS Pilani',
+          score: 710,
+          previousScore: 710,
+          metricLabel: '8 Tasks • Task Score: 740 (-30 pen)',
+          metricValue: '8 Tasks',
+          metricType: 'slam',
+          round: 'RND 4',
+          rankChange: 0,
+          status: 'ACTIVE'
+        },
+        {
+          id: 'team-titanrobotics',
+          rank: 8,
+          previousRank: 8,
+          teamName: 'TITAN ROBOTICS',
+          institution: 'IIIT Delhi',
+          institutionCode: 'IIIT Delhi',
+          score: 675,
+          previousScore: 675,
+          metricLabel: '8 Tasks • Task Score: 700 (-35 pen)',
+          metricValue: '8 Tasks',
+          metricType: 'lidar',
+          round: 'RND 4',
+          rankChange: 0,
+          status: 'ACTIVE'
+        },
+        {
+          id: 'team-visionx',
+          rank: 9,
+          previousRank: 9,
+          teamName: 'VISIONX',
+          institution: 'VIT Vellore',
+          institutionCode: 'VIT Vellore',
+          score: 610,
+          previousScore: 610,
+          metricLabel: '7 Tasks • Task Score: 650 (-40 pen)',
+          metricValue: '7 Tasks',
+          metricType: 'pointcloud',
+          round: 'RND 4',
+          rankChange: 0,
+          status: 'CALCULATING...'
+        },
+        {
+          id: 'team-botmatrix',
+          rank: 10,
+          previousRank: 10,
+          teamName: 'BOTMATRIX',
+          institution: 'SRM Institute',
+          institutionCode: 'SRM',
+          score: 585,
+          previousScore: 585,
+          metricLabel: '7 Tasks • Task Score: 620 (-35 pen)',
+          metricValue: '7 Tasks',
+          metricType: 'neural',
+          round: 'RND 4',
+          rankChange: 0,
+          status: 'CALCULATING...'
+        },
+        {
+          id: 'team-robopulse',
+          rank: 11,
+          previousRank: 11,
+          teamName: 'ROBOPULSE',
+          institution: 'Manipal Institute',
+          institutionCode: 'Manipal',
+          score: 550,
+          previousScore: 550,
+          metricLabel: '6 Tasks • Task Score: 580 (-30 pen)',
+          metricValue: '6 Tasks',
+          metricType: 'trajectory',
+          round: 'RND 4',
+          rankChange: 0,
+          status: 'CALCULATING...'
+        },
+        {
+          id: 'team-kinetix',
+          rank: 12,
+          previousRank: 12,
+          teamName: 'KINETIX',
+          institution: 'Amity University',
+          institutionCode: 'Amity',
+          score: 505,
+          previousScore: 505,
+          metricLabel: '6 Tasks • Task Score: 540 (-35 pen)',
+          metricValue: '6 Tasks',
+          metricType: 'grid',
+          round: 'RND 4',
+          rankChange: 0,
+          status: 'CALCULATING...'
+        },
+        {
+          id: 'team-cybermech',
+          rank: 13,
+          previousRank: 13,
+          teamName: 'CYBERMECH',
+          institution: 'KIIT',
+          institutionCode: 'KIIT',
+          score: 460,
+          previousScore: 460,
+          metricLabel: '5 Tasks • Task Score: 490 (-30 pen)',
+          metricValue: '5 Tasks',
+          metricType: 'optimization',
+          round: 'RND 4',
+          rankChange: 0,
+          status: 'CALCULATING...'
+        },
+        {
+          id: 'team-robosphere',
+          rank: 14,
+          previousRank: 14,
+          teamName: 'ROBOSPHERE',
+          institution: 'LNMIIT',
+          institutionCode: 'LNMIIT',
+          score: 415,
+          previousScore: 415,
+          metricLabel: '5 Tasks • Task Score: 450 (-35 pen)',
+          metricValue: '5 Tasks',
+          metricType: 'slam',
+          round: 'RND 4',
+          rankChange: 0,
+          status: 'CALCULATING...'
+        },
+        {
+          id: 'team-techtitans',
+          rank: 15,
+          previousRank: 15,
+          teamName: 'TECHTITANS',
+          institution: 'IIIT Hyderabad',
+          institutionCode: 'IIIT Hyd',
+          score: 380,
+          previousScore: 380,
+          metricLabel: '4 Tasks • Task Score: 410 (-30 pen)',
+          metricValue: '4 Tasks',
+          metricType: 'lidar',
+          round: 'RND 4',
+          rankChange: 0,
+          status: 'CALCULATING...'
+        }
+      ];
+
+      const INITIAL_TEAMS = HACKATHON_SHEET_DATASET_TEAMS;
+
+      // Score counter with easing animation
+      function ScoreCounter({ score, className = '', suffix = 'pts' }) {
+        const [displayScore, setDisplayScore] = useState(score);
+
+        useEffect(() => {
+          const start = displayScore;
+          const end = score;
+          if (start === end) return;
+          const duration = 1000;
+          const startTime = performance.now();
+
+          const step = (now) => {
+            const progress = Math.min((now - startTime) / duration, 1);
+            const ease = 1 - Math.pow(1 - progress, 3);
+            setDisplayScore(Math.round(start + (end - start) * ease));
+            if (progress < 1) requestAnimationFrame(step);
+          };
+          requestAnimationFrame(step);
+        }, [score]);
+
+        return (
+          <div className={`flex items-baseline gap-1 ${className}`}>
+            <span className="font-bold tracking-tight">
+              {displayScore.toLocaleString()}
+            </span>
+            {suffix && (
+              <span className="text-xs font-semibold text-[#9ca3af] uppercase">
+                {suffix}
+              </span>
+            )}
+          </div>
+        );
+      }
+
+      // Spline Background
+      function SplineBackground({ isSplineEnabled = true }) {
+        const canvasRef = useRef(null);
+        const [splineLoaded, setSplineLoaded] = useState(false);
+
+        useEffect(() => {
+          if (!canvasRef.current) return;
+          const canvas = canvasRef.current;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) return;
+
+          let animId;
+          let w = (canvas.width = window.innerWidth);
+          let h = (canvas.height = window.innerHeight);
+
+          const onResize = () => {
+            w = canvas.width = window.innerWidth;
+            h = canvas.height = window.innerHeight;
+          };
+          window.addEventListener('resize', onResize);
+
+          const particles = [];
+          for (let i = 0; i < 40; i++) {
+            particles.push({
+              x: Math.random() * w,
+              y: Math.random() * h,
+              r: Math.random() * 2 + 0.8,
+              vx: (Math.random() - 0.5) * 0.3,
+              vy: -Math.random() * 0.4 - 0.1,
+              a: Math.random() * 0.4 + 0.1
+            });
+          }
+
+          let t = 0;
+          const render = () => {
+            t += 0.008;
+            ctx.clearRect(0, 0, w, h);
+
+            const bgGrad = ctx.createRadialGradient(w * 0.5, h * 0.4, 100, w * 0.5, h * 0.5, Math.max(w, h));
+            bgGrad.addColorStop(0, '#0d0f14');
+            bgGrad.addColorStop(0.6, '#07080b');
+            bgGrad.addColorStop(1, '#030406');
+            ctx.fillStyle = bgGrad;
+            ctx.fillRect(0, 0, w, h);
+
+            const g1 = ctx.createLinearGradient(w * 0.4, 0, w, h);
+            g1.addColorStop(0, 'rgba(217, 119, 6, 0)');
+            g1.addColorStop(0.35, 'rgba(245, 158, 11, 0.09)');
+            g1.addColorStop(0.65, 'rgba(234, 88, 12, 0.19)');
+            g1.addColorStop(1, 'rgba(180, 83, 9, 0)');
+
+            ctx.fillStyle = g1;
+            ctx.beginPath();
+            const o1 = Math.sin(t) * 30;
+            ctx.moveTo(w * 0.65 + o1, 0);
+            ctx.lineTo(w * 0.95 + o1, 0);
+            ctx.lineTo(w * 0.45 + o1, h);
+            ctx.lineTo(w * 0.15 + o1, h);
+            ctx.closePath();
+            ctx.fill();
+
+            const g2 = ctx.createLinearGradient(w * 0.7, 0, w * 1.1, h);
+            g2.addColorStop(0, 'rgba(251, 191, 36, 0)');
+            g2.addColorStop(0.5, 'rgba(245, 158, 11, 0.15)');
+            g2.addColorStop(1, 'rgba(217, 119, 6, 0)');
+
+            ctx.fillStyle = g2;
+            ctx.beginPath();
+            const o2 = Math.cos(t * 0.8) * 20;
+            ctx.moveTo(w * 0.85 + o2, 0);
+            ctx.lineTo(w * 1.1 + o2, 0);
+            ctx.lineTo(w * 0.75 + o2, h);
+            ctx.lineTo(w * 0.5 + o2, h);
+            ctx.closePath();
+            ctx.fill();
+
+            const gridY = h * 0.75;
+            for (let y = gridY; y < h; y += (h - gridY) / 10) {
+              const factor = (y - gridY) / (h - gridY);
+              ctx.strokeStyle = `rgba(245, 158, 11, ${0.02 + factor * 0.08})`;
+              ctx.beginPath();
+              ctx.moveTo(0, y);
+              ctx.lineTo(w, y);
+              ctx.stroke();
+            }
+
+            const vpX = w * 0.5;
+            const vpY = h * 0.55;
+            for (let x = -w * 0.5; x <= w * 1.5; x += 90) {
+              ctx.strokeStyle = 'rgba(245, 158, 11, 0.04)';
+              ctx.beginPath();
+              ctx.moveTo(vpX, vpY);
+              ctx.lineTo(x, h);
+              ctx.stroke();
+            }
+
+            particles.forEach(p => {
+              p.x += p.vx;
+              p.y += p.vy;
+              if (p.x < 0) p.x = w;
+              if (p.x > w) p.x = 0;
+              if (p.y < 0) p.y = h;
+              if (p.y > h) p.y = 0;
+              ctx.fillStyle = `rgba(245, 158, 11, ${p.a})`;
+              ctx.beginPath();
+              ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+              ctx.fill();
+            });
+
+            animId = requestAnimationFrame(render);
+          };
+          render();
+
+          return () => {
+            window.removeEventListener('resize', onResize);
+            cancelAnimationFrame(animId);
+          };
+        }, []);
+
+        return (
+          <div className="fixed inset-0 pointer-events-none overflow-hidden z-0 select-none bg-[#07080b]">
+            <canvas ref={canvasRef} className="absolute inset-0 w-full h-full object-cover" />
+            
+            {isSplineEnabled && (
+              <div className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ${splineLoaded ? 'opacity-85' : 'opacity-0'}`}>
+                <iframe
+                  src="https://my.spline.design/retrofuturismbganimation-fba5a24b-a843-461d-b983-e5c140313420/"
+                  className="w-full h-full border-0 pointer-events-none"
+                  title="Spline 3D Scene"
+                  onLoad={() => setSplineLoaded(true)}
+                  loading="lazy"
+                />
+              </div>
+            )}
+            <div className="absolute inset-0 bg-gradient-to-t from-[#07080b] via-transparent to-[#07080b]/80" />
+            <div className="absolute inset-0 bg-radial-vignette opacity-70" />
+            <div className="absolute inset-0 bg-scanlines opacity-15 pointer-events-none" />
+          </div>
+        );
+      }
+
+      // Hero Section (Clean Centralized Heading, No 3D robot)
+      function HeroSection({ isEvaluationConcluded }) {
+        return (
+          <div className="relative w-full z-10 pt-3 pb-3 select-none flex flex-col items-center justify-center text-center">
+            {/* Coordinates / Status Telemetry Bar */}
+            <div className="flex items-center justify-center gap-4 sm:gap-8 w-full max-w-2xl text-[11px] sm:text-xs text-[#9ca3af]/85 tracking-[0.25em] uppercase mb-1.5">
+              <span className="hidden sm:inline-block text-[#6b7280]">COORDINATES: 28.6139° N, 77.2090° E</span>
+              <span className="text-[#f59e0b] font-semibold flex items-center gap-1.5">
+                <span className={`w-1.5 h-1.5 rounded-full ${isEvaluationConcluded ? 'bg-[#f59e0b] shadow-[0_0_8px_#f59e0b]' : 'bg-[#f59e0b] animate-pulse'}`} />
+                {isEvaluationConcluded ? '🏆 COMPETITION EVALUATION CONCLUDED 🏆' : 'AUTONOMOUS SYSTEMS TELEMETRY'}
+                <span className={`w-1.5 h-1.5 rounded-full ${isEvaluationConcluded ? 'bg-[#f59e0b] shadow-[0_0_8px_#f59e0b]' : 'bg-[#f59e0b] animate-pulse'}`} />
+              </span>
+              <span className="hidden sm:inline-block text-[#6b7280]">{isEvaluationConcluded ? 'STATUS: FINALIZED' : 'STATUS: ACTIVE'}</span>
+            </div>
+
+            {/* Prominent Centralized Hero Title */}
+            <h1 
+              className="text-4xl sm:text-5xl md:text-6xl lg:text-[60px] font-black tracking-[0.08em] uppercase text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.9)]"
+              style={{ textShadow: '0 0 40px rgba(255,255,255,0.2)' }}
+            >
+              KINETICS HACKATHON
+            </h1>
+
+            {/* Subtitle with metallic copper glowing line dividers */}
+            <div className="flex items-center justify-center gap-4 mt-2">
+              <div className="h-[1.5px] w-12 sm:w-20 md:w-28 bg-gradient-to-r from-transparent via-[#f59e0b] to-[#f59e0b]/80 shadow-[0_0_8px_#f59e0b]" />
+              <h2 className="text-base sm:text-lg md:text-xl font-bold tracking-[0.3em] uppercase text-[#f59e0b] drop-shadow-[0_0_12px_rgba(245,158,11,0.5)]">
+                {isEvaluationConcluded ? 'FINAL 3D PODIUM CEREMONY' : 'LIVE LEADERBOARD'}
+              </h2>
+              <div className="h-[1.5px] w-12 sm:w-20 md:w-28 bg-gradient-to-l from-transparent via-[#f59e0b] to-[#f59e0b]/80 shadow-[0_0_8px_#f59e0b]" />
+            </div>
+          </div>
+        );
+      }
+
+      // Top Header with Kinetic Logo.png image
+      function Header({ connectionState, currentDate, onOpenConfig, onOpenSimulator, isSoundEnabled, onToggleSound, onManualRefresh, isEvaluationConcluded, onToggleEvaluationConcluded }) {
+        const getStatus = () => {
+          switch (connectionState) {
+            case 'LIVE':
+              return { text: 'DATA FEED ACTIVE', badge: 'LIVE', badgeBg: 'bg-[#ef4444]', dot: 'bg-white', glow: 'shadow-[0_0_12px_#ef4444]', sub: 'text-[#f59e0b]', icon: '⚡' };
+            case 'SYNCING':
+              return { text: 'SYNCING FEED...', badge: 'SYNC', badgeBg: 'bg-[#f59e0b]', dot: 'bg-white', glow: 'shadow-[0_0_12px_#f59e0b]', sub: 'text-[#f59e0b]', icon: '🔄' };
+            case 'DELAYED':
+              return { text: 'FEED DELAYED', badge: 'LAG', badgeBg: 'bg-[#d97706]', dot: 'bg-[#fef3c7]', glow: 'shadow-[0_0_8px_#d97706]', sub: 'text-[#fbbf24]', icon: '⚠️' };
+            default:
+              return { text: 'DATA FEED INTERRUPTED', badge: 'OFFLINE', badgeBg: 'bg-[#4b5563]', dot: 'bg-[#9ca3af]', glow: 'none', sub: 'text-[#9ca3af]', icon: '✕' };
+          }
+        };
+        const st = getStatus();
+
+        return (
+          <header className="relative w-full z-20 border-b border-[#262c3a]/60 bg-[#07080b]/85 backdrop-blur-md px-4 sm:px-8 py-3 flex items-center justify-between">
+            {/* Left: Branding with Kinetic Logo.png */}
+            <div className="flex items-center gap-3">
+              <img
+                src="Kinetics Logo.png"
+                alt="Kinetic Logo"
+                className="h-10 sm:h-12 w-auto object-contain flex-shrink-0"
+                onError={e => { e.target.src = './Kinetics Logo.png'; }}
+              />
+              <div className="flex items-center gap-2.5">
+                <span className="text-xl sm:text-2xl md:text-3xl font-black tracking-[0.12em] text-white drop-shadow-md">
+                  KINETIC
+                </span>
+                <span className="h-5 w-[1.5px] bg-[#4b5563]" />
+                <span className="text-sm sm:text-base font-semibold tracking-[0.15em] text-[#9ca3af] uppercase">
+                  HACKATHON 2026
+                </span>
+              </div>
+            </div>
+
+            {/* Center Tab */}
+            <div className="hidden md:flex flex-col items-center">
+              <div className="relative px-6 py-1">
+                <span className="text-sm sm:text-base font-bold tracking-[0.2em] text-white uppercase">
+                  LEADERBOARD
+                </span>
+                <div className="absolute bottom-0 left-2 right-2 h-[2px] bg-gradient-to-r from-transparent via-[#f59e0b] to-transparent shadow-[0_0_8px_#f59e0b]" />
+              </div>
+            </div>
+
+            {/* Right: Date, Status, Controls */}
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="hidden sm:flex flex-col items-end text-right">
+                <span className="text-xs sm:text-sm font-bold tracking-wider text-[#e5e7eb]">
+                  {currentDate}
+                </span>
+                <span className={`text-[10px] tracking-wide ${isEvaluationConcluded ? 'text-[#f59e0b] font-bold' : st.sub} flex items-center gap-1`}>
+                  <span>{isEvaluationConcluded ? '🏆' : st.icon}</span> {isEvaluationConcluded ? 'FINAL RESULTS LOCKED' : st.text}
+                </span>
+              </div>
+              <button
+                onClick={() => onToggleEvaluationConcluded?.(!isEvaluationConcluded)}
+                title={isEvaluationConcluded ? 'Switch to Live 2D Mode' : 'End Evaluation & View 3D Podium'}
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full cursor-pointer transition-all duration-300 ${
+                  isEvaluationConcluded
+                    ? 'bg-[#f59e0b] text-black shadow-[0_0_15px_rgba(245,158,11,0.6)]'
+                    : `${st.badgeBg} ${st.glow} text-white`
+                }`}
+              >
+                <span className={`w-2 h-2 rounded-full ${isEvaluationConcluded ? 'bg-black' : st.dot} animate-pulse`} />
+                <span className="text-[11px] font-black tracking-widest uppercase">
+                  {isEvaluationConcluded ? '🏆 3D FINAL' : st.badge}
+                </span>
+              </button>
+              <div className="flex items-center gap-1 bg-[#111827]/80 border border-[#374151]/50 rounded-lg p-0.5">
+                <button onClick={onManualRefresh} title="Sync Feed" className="p-1.5 text-[#9ca3af] hover:text-[#f59e0b] hover:bg-[#1f2937] rounded">
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/></svg>
+                </button>
+                <button onClick={onToggleSound} title="Audio FX" className="p-1.5 text-[#9ca3af] hover:text-[#f59e0b] hover:bg-[#1f2937] rounded">
+                  {isSoundEnabled ? (
+                    <svg className="w-3.5 h-3.5 text-[#f59e0b]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+                  ) : (
+                    <svg className="w-3.5 h-3.5 text-[#6b7280]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+                  )}
+                </button>
+                <button onClick={onOpenSimulator} title="Simulator Controls" className="p-1.5 text-[#9ca3af] hover:text-[#f59e0b] hover:bg-[#1f2937] rounded">
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+                </button>
+                <button onClick={onOpenConfig} title="Settings" className="p-1.5 text-[#9ca3af] hover:text-[#f59e0b] hover:bg-[#1f2937] rounded">
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                </button>
+              </div>
+            </div>
+          </header>
+        );
+      }
+
+      // Podium Card
+      function PodiumCard({ team, rankPosition }) {
+        const isFirst = rankPosition === 1;
+        const isSecond = rankPosition === 2;
+        const isThird = rankPosition === 3;
+
+        const theme = isFirst
+          ? {
+              border: 'border-[#f59e0b]/80 shadow-[0_0_25px_rgba(245,158,11,0.25)]',
+              bg: 'bg-gradient-to-b from-[#2a1d0d]/90 via-[#181410]/95 to-[#0e0c0a]/95',
+              badgeColor: 'text-[#fbbf24]',
+              rankText: '1st',
+              accentGlow: 'from-[#f59e0b]/30 via-transparent to-transparent',
+            }
+          : isSecond
+          ? {
+              border: 'border-[#94a3b8]/70 shadow-[0_0_20px_rgba(148,163,184,0.15)]',
+              bg: 'bg-gradient-to-b from-[#1e293b]/90 via-[#0f172a]/95 to-[#090d16]/95',
+              badgeColor: 'text-[#e2e8f0]',
+              rankText: '2nd',
+              accentGlow: 'from-[#94a3b8]/25 via-transparent to-transparent',
+            }
+          : {
+              border: 'border-[#ea580c]/70 shadow-[0_0_20px_rgba(234,88,12,0.18)]',
+              bg: 'bg-gradient-to-b from-[#2d150b]/90 via-[#1a0e07]/95 to-[#0c0603]/95',
+              badgeColor: 'text-[#fdba74]',
+              rankText: '3rd',
+              accentGlow: 'from-[#ea580c]/25 via-transparent to-transparent',
+            };
+
+        return (
+          <div
+            className={`relative flex flex-col justify-between transition-all duration-700 ease-out select-none
+              ${isFirst ? 'w-full md:w-[360px] lg:w-[410px] h-[210px] md:h-[225px] z-20 order-1 md:order-2' : ''}
+              ${isSecond ? 'w-full md:w-[310px] lg:w-[350px] h-[185px] md:h-[195px] z-10 order-2 md:order-1 self-end' : ''}
+              ${isThird ? 'w-full md:w-[310px] lg:w-[350px] h-[185px] md:h-[195px] z-10 order-3 md:order-3 self-end' : ''}
+            `}
+          >
+            <div
+              className={`w-full h-full relative rounded-lg border ${theme.border} ${theme.bg} p-4 md:p-5 flex flex-col justify-between overflow-hidden backdrop-blur-md`}
+              style={{
+                clipPath: isFirst
+                  ? 'polygon(0 0, calc(100% - 24px) 0, 100% 24px, 100% 100%, 24px 100%, 0 calc(100% - 24px))'
+                  : isSecond
+                  ? 'polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 0 100%)'
+                  : 'polygon(0 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%)',
+              }}
+            >
+              <div className={`absolute -top-12 -left-12 -right-12 h-24 bg-gradient-to-b ${theme.accentGlow} pointer-events-none`} />
+
+              {/* Top: Logo, Names & Rank */}
+              <div className="relative flex items-start justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="relative flex-shrink-0 w-12 h-12 md:w-14 md:h-14 rounded-full border border-white/20 bg-black/60 flex items-center justify-center shadow-inner overflow-hidden">
+                    {isFirst ? (
+                      <svg viewBox="0 0 100 100" className="w-8 h-8 md:w-9 md:h-9">
+                        <polygon points="50,15 88,80 12,80" fill="none" stroke="#f59e0b" strokeWidth="8" strokeLinejoin="round" />
+                        <polygon points="50,38 72,75 28,75" fill="#f59e0b" />
+                      </svg>
+                    ) : isSecond ? (
+                      <svg viewBox="0 0 100 100" className="w-8 h-8 md:w-9 md:h-9">
+                        <circle cx="50" cy="50" r="35" fill="none" stroke="#94a3b8" strokeWidth="5" strokeDasharray="14 6" />
+                        <circle cx="50" cy="50" r="16" fill="none" stroke="#94a3b8" strokeWidth="4" />
+                        <circle cx="50" cy="20" r="6" fill="#94a3b8" />
+                        <circle cx="76" cy="65" r="6" fill="#94a3b8" />
+                        <circle cx="24" cy="65" r="6" fill="#94a3b8" />
+                      </svg>
+                    ) : (
+                      <svg viewBox="0 0 100 100" className="w-8 h-8 md:w-9 md:h-9">
+                        <path d="M 50,20 C 30,20 20,35 20,50 C 20,68 35,80 50,80 C 65,80 80,68 80,50 C 80,35 70,20 50,20 Z" fill="none" stroke="#ea580c" strokeWidth="4" />
+                        <line x1="30" y1="40" x2="70" y2="60" stroke="#ea580c" strokeWidth="2" strokeDasharray="3 2" />
+                        <circle cx="35" cy="45" r="4" fill="#ea580c" />
+                        <circle cx="65" cy="45" r="4" fill="#ea580c" />
+                      </svg>
+                    )}
+                  </div>
+                  <div className="flex flex-col">
+                    <h3 className={`font-black uppercase tracking-wider text-white leading-tight ${isFirst ? 'text-lg md:text-xl' : 'text-base md:text-lg'}`}>
+                      {team.teamName}
+                    </h3>
+                    <span className="text-xs font-semibold tracking-wider text-[#9ca3af] uppercase">
+                      {team.institutionCode || team.institution}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex flex-col items-end">
+                  <span className={`font-black tracking-wider leading-none ${isFirst ? 'text-2xl md:text-3xl' : 'text-xl md:text-2xl'} ${theme.badgeColor}`}>
+                    {theme.rankText}
+                  </span>
+                  <div className="flex items-center gap-0.5 mt-1 text-sm font-bold">
+                    {team.rankChange > 0 ? (
+                      <span className="text-[#f59e0b]">+{team.rankChange}</span>
+                    ) : team.rankChange < 0 ? (
+                      <span className="text-[#ef4444] flex items-center">▼ {team.rankChange}</span>
+                    ) : (
+                      <span className="text-[#9ca3af]">+0</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Score */}
+              <div className="relative mt-2">
+                <ScoreCounter
+                  score={team.score}
+                  className={`text-white ${isFirst ? 'text-3xl md:text-4xl lg:text-5xl' : 'text-2xl md:text-3xl lg:text-4xl'}`}
+                />
+              </div>
+
+              {/* Footer */}
+              <div className="relative mt-2 pt-2 border-t border-white/10 flex items-center justify-between text-xs text-[#9ca3af]">
+                <span className="truncate pr-2">{team.metricLabel || 'RND 4 / LiDAR accuracy: 98.4%'}</span>
+                <div className="flex items-center gap-1 flex-shrink-0">
+                  <div className="grid grid-cols-3 gap-0.5 opacity-70">
+                    <span className={`w-1.5 h-1.5 rounded-full ${isFirst ? 'bg-[#f59e0b]' : isSecond ? 'bg-[#cbd5e1]' : 'bg-[#ea580c]'}`} />
+                    <span className={`w-1.5 h-1.5 rounded-full ${isFirst ? 'bg-[#f59e0b]' : isSecond ? 'bg-[#cbd5e1]' : 'bg-[#ea580c]'}`} />
+                    <span className={`w-1.5 h-1.5 rounded-full ${isFirst ? 'bg-[#f59e0b]' : isSecond ? 'bg-[#cbd5e1]' : 'bg-[#ea580c]'}`} />
+                    <span className={`w-1.5 h-1.5 rounded-full ${isFirst ? 'bg-[#f59e0b]' : isSecond ? 'bg-[#cbd5e1]' : 'bg-[#ea580c]'}`} />
+                    <span className={`w-1.5 h-1.5 rounded-full ${isFirst ? 'bg-[#f59e0b]' : isSecond ? 'bg-[#cbd5e1]' : 'bg-[#ea580c]'}`} />
+                    <span className={`w-1.5 h-1.5 rounded-full ${isFirst ? 'bg-[#f59e0b]' : isSecond ? 'bg-[#cbd5e1]' : 'bg-[#ea580c]'}`} />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      // 2D Stepped Podium Component matching reference design
+      function Podium2D({ teams }) {
+        const first = teams.find(t => t.rank === 1) || teams[0];
+        const second = teams.find(t => t.rank === 2) || teams[1];
+        const third = teams.find(t => t.rank === 3) || teams[2];
+
+        if (!first || !second || !third) return null;
+
+        return (
+          <div className="relative w-full max-w-6xl mx-auto px-4 mt-3 mb-6 md:mt-5 md:mb-8 flex flex-col items-center select-none">
+            {/* Cards Row: 2nd (Left) | 1st (Center, Elevated) | 3rd (Right) */}
+            <div className="w-full flex flex-col md:flex-row items-center md:items-end justify-center gap-4 md:gap-3 lg:gap-6 relative z-10">
+              <PodiumCard team={second} rankPosition={2} />
+              <PodiumCard team={first} rankPosition={1} />
+              <PodiumCard team={third} rankPosition={3} />
+            </div>
+
+            {/* 3D Stepped Metallic Platform Base underneath */}
+            <div className="hidden md:flex items-end justify-center w-full max-w-[1100px] h-8 -mt-2 relative z-0">
+              {/* Left Step (2nd place) */}
+              <div className="w-[320px] lg:w-[350px] h-5 bg-gradient-to-b from-[#1e222d] to-[#0c0e14] border-t border-l border-r border-[#374151]/50 shadow-[0_6px_16px_rgba(0,0,0,0.8)] relative">
+                <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-[#94a3b8]/40 to-transparent" />
+              </div>
+
+              {/* Center Step (1st place, elevated and warm glow) */}
+              <div className="w-[380px] lg:w-[410px] h-8 bg-gradient-to-b from-[#2d1b09] to-[#0f0c08] border-t border-l border-r border-[#f59e0b]/60 shadow-[0_0_20px_rgba(245,158,11,0.25)] relative">
+                <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-[#f59e0b] to-transparent" />
+                <div className="absolute -bottom-2 inset-x-4 h-4 bg-[#f59e0b]/20 blur-md pointer-events-none" />
+              </div>
+
+              {/* Right Step (3rd place) */}
+              <div className="w-[320px] lg:w-[350px] h-5 bg-gradient-to-b from-[#22150e] to-[#0c0806] border-t border-l border-r border-[#ea580c]/50 shadow-[0_6px_16px_rgba(0,0,0,0.8)] relative">
+                <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-[#ea580c]/40 to-transparent" />
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      // 3D Hero Podium Component with Three.js WebGL, Brushed-Metal Stepped Pillars, Volumetric Lighting, Holographic Rings & LiDAR Terrain
+      function Podium3D({ teams, onSelectTeam }) {
+        const mountRef = useRef(null);
+        const [overlayPos, setOverlayPos] = useState({
+          first: { x: 50, y: 35 },
+          second: { x: 23, y: 48 },
+          third: { x: 77, y: 52 }
+        });
+        const [isOvertake, setIsOvertake] = useState(false);
+        const prevLeaderRef = useRef(null);
+
+        const first = teams.find(t => t.rank === 1) || teams[0];
+        const second = teams.find(t => t.rank === 2) || teams[1];
+        const third = teams.find(t => t.rank === 3) || teams[2];
+
+        useEffect(() => {
+          if (!first) return;
+          if (prevLeaderRef.current && prevLeaderRef.current !== first.id) {
+            setIsOvertake(true);
+            const timer = setTimeout(() => setIsOvertake(false), 3200);
+            return () => clearTimeout(timer);
+          }
+          prevLeaderRef.current = first.id;
+        }, [first]);
+
+        useEffect(() => {
+          const container = mountRef.current;
+          if (!container || typeof THREE === 'undefined') return;
+
+          let width = container.clientWidth || 1000;
+          let height = container.clientHeight || 460;
+
+          // 1. Scene & Camera
+          const scene = new THREE.Scene();
+          scene.fog = new THREE.FogExp2(0x07080b, 0.015);
+
+          const camera = new THREE.PerspectiveCamera(34, width / height, 0.1, 500);
+          camera.position.set(0, 4.4, 20.0);
+          camera.lookAt(0, 2.7, 0);
+
+          // 2. WebGL Renderer
+          const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
+          renderer.setSize(width, height);
+          renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+          renderer.shadowMap.enabled = true;
+          renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+          renderer.domElement.style.position = 'absolute';
+          renderer.domElement.style.top = '0';
+          renderer.domElement.style.left = '0';
+          renderer.domElement.style.width = '100%';
+          renderer.domElement.style.height = '100%';
+          renderer.domElement.style.pointerEvents = 'auto';
+
+          container.appendChild(renderer.domElement);
+
+          // 3. Lighting
+          const ambientLight = new THREE.AmbientLight(0x8aa0c0, 0.35);
+          scene.add(ambientLight);
+
+          const mainSpot = new THREE.SpotLight(0xf59e0b, 2.6, 45, Math.PI / 4.8, 0.8, 1.4);
+          mainSpot.position.set(0, 15, 4);
+          mainSpot.target.position.set(0, 2.5, 0);
+          mainSpot.castShadow = true;
+          scene.add(mainSpot);
+          scene.add(mainSpot.target);
+
+          const rimLightLeft = new THREE.PointLight(0x94a3b8, 2.2, 28);
+          rimLightLeft.position.set(-10, 4, -2);
+          scene.add(rimLightLeft);
+
+          const rimLightRight = new THREE.PointLight(0xea580c, 2.2, 28);
+          rimLightRight.position.set(10, 4, -2);
+          scene.add(rimLightRight);
+
+          const frontFill = new THREE.PointLight(0xfff3df, 0.9, 32);
+          frontFill.position.set(0, 3, 14);
+          scene.add(frontFill);
+
+          // 4. Reflective Stage Floor
+          const floorGeo = new THREE.CircleGeometry(11.5, 64);
+          const floorMat = new THREE.MeshStandardMaterial({
+            color: 0x0a0b10,
+            metalness: 0.82,
+            roughness: 0.32,
+          });
+          const floor = new THREE.Mesh(floorGeo, floorMat);
+          floor.rotation.x = -Math.PI / 2;
+          floor.position.y = 0;
+          floor.receiveShadow = true;
+          scene.add(floor);
+
+          const rimGeo = new THREE.RingGeometry(11.3, 11.5, 64);
+          const rimMat = new THREE.MeshBasicMaterial({ color: 0xf59e0b, side: THREE.DoubleSide });
+          const rim = new THREE.Mesh(rimGeo, rimMat);
+          rim.rotation.x = -Math.PI / 2;
+          rim.position.y = 0.01;
+          scene.add(rim);
+
+          // Concentric Guide Rings
+          [6.5, 9.0].forEach(r => {
+            const gGeo = new THREE.RingGeometry(r - 0.02, r + 0.02, 64);
+            const gMat = new THREE.MeshBasicMaterial({ color: 0xf59e0b, transparent: true, opacity: 0.18, side: THREE.DoubleSide });
+            const gMesh = new THREE.Mesh(gGeo, gMat);
+            gMesh.rotation.x = -Math.PI / 2;
+            gMesh.position.y = 0.01;
+            scene.add(gMesh);
+          });
+
+          // Glow Pools under each pillar
+          const makeGlowMap = () => {
+            const c = document.createElement('canvas');
+            c.width = c.height = 128;
+            const ctx = c.getContext('2d');
+            const g = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+            g.addColorStop(0, 'rgba(255, 255, 255, 1)');
+            g.addColorStop(0.5, 'rgba(255, 255, 255, 0.25)');
+            g.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            ctx.fillStyle = g;
+            ctx.fillRect(0, 0, 128, 128);
+            const tex = new THREE.CanvasTexture(c);
+            tex.needsUpdate = true;
+            return tex;
+          };
+          const glowMap = makeGlowMap();
+
+          const createGlowPool = (colorHex, posX, opacity) => {
+            const pGeo = new THREE.PlaneGeometry(5.2, 5.2);
+            const pMat = new THREE.MeshBasicMaterial({
+              map: glowMap,
+              color: colorHex,
+              transparent: true,
+              opacity: opacity,
+              depthWrite: false,
+              blending: THREE.AdditiveBlending
+            });
+            const mesh = new THREE.Mesh(pGeo, pMat);
+            mesh.rotation.x = -Math.PI / 2;
+            mesh.position.set(posX, 0.015, 0.1);
+            scene.add(mesh);
+          };
+          createGlowPool(0x94a3b8, -4.5, 0.25);
+          createGlowPool(0xf59e0b, 0, 0.45);
+          createGlowPool(0xea580c, 4.5, 0.25);
+
+          // 5. Volumetric Light Beam on 1st Place
+          const beamGeo = new THREE.ConeGeometry(2.6, 12, 32, 1, true);
+          const beamMat = new THREE.MeshBasicMaterial({
+            color: 0xf59e0b,
+            transparent: true,
+            opacity: 0.09,
+            side: THREE.DoubleSide,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false
+          });
+          const beam = new THREE.Mesh(beamGeo, beamMat);
+          beam.position.set(0, 8.0, 0);
+          beam.rotation.x = Math.PI;
+          scene.add(beam);
+
+          // Numeral Texture Generator
+          const makeNumeralTex = (num, colorHex) => {
+            const c = document.createElement('canvas');
+            c.width = c.height = 256;
+            const ctx = c.getContext('2d');
+            ctx.clearRect(0, 0, 256, 256);
+            ctx.font = 'bold 160px "Times New Roman", Times, serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = colorHex;
+            ctx.shadowColor = colorHex;
+            ctx.shadowBlur = 18;
+            ctx.fillText(num, 128, 135);
+            const tex = new THREE.CanvasTexture(c);
+            tex.needsUpdate = true;
+            return tex;
+          };
+
+          // 6. Stepped Metal 3D Pillars
+          const pillarGroup = new THREE.Group();
+          scene.add(pillarGroup);
+
+          const createPillar = (rank, colorHex, posX) => {
+            const pWidth = rank === 1 ? 2.8 : 2.4;
+            const pDepth = 2.4;
+
+            const group = new THREE.Group();
+            group.position.x = posX;
+
+            // Body Mesh
+            const bodyGeo = new THREE.BoxGeometry(pWidth, 1, pDepth);
+            const bodyMat = new THREE.MeshStandardMaterial({
+              color: 0x181c26,
+              metalness: 0.85,
+              roughness: 0.35,
+            });
+            const body = new THREE.Mesh(bodyGeo, bodyMat);
+            body.castShadow = true;
+            body.receiveShadow = true;
+            group.add(body);
+
+            // Glowing Edge Lines
+            const edgesGeo = new THREE.EdgesGeometry(bodyGeo);
+            const edgesMat = new THREE.LineBasicMaterial({ color: colorHex, linewidth: 1.5 });
+            const edges = new THREE.LineSegments(edgesGeo, edgesMat);
+            body.add(edges);
+
+            // Emissive Cap Plate
+            const capGeo = new THREE.BoxGeometry(pWidth + 0.08, 0.08, pDepth + 0.08);
+            const capMat = new THREE.MeshBasicMaterial({ color: colorHex });
+            const cap = new THREE.Mesh(capGeo, capMat);
+            group.add(cap);
+
+            // Engraved Rank Numeral
+            const numTex = makeNumeralTex(String(rank), colorHex);
+            const numGeo = new THREE.PlaneGeometry(1.2, 1.2);
+            const numMat = new THREE.MeshBasicMaterial({ map: numTex, transparent: true, depthWrite: false });
+            const numMesh = new THREE.Mesh(numGeo, numMat);
+            numMesh.position.z = pDepth * 0.5 + 0.01;
+            group.add(numMesh);
+
+            // Floating Holographic Rings
+            const ringGeo = new THREE.TorusGeometry(rank === 1 ? 0.9 : 0.75, 0.016, 12, 48);
+            const ringMat = new THREE.MeshBasicMaterial({ color: colorHex, wireframe: false });
+            const ring = new THREE.Mesh(ringGeo, ringMat);
+            group.add(ring);
+
+            // Orbiting Gyro Ring
+            const gyroGeo = new THREE.TorusGeometry(rank === 1 ? 1.05 : 0.9, 0.01, 8, 48);
+            const gyroMat = new THREE.MeshBasicMaterial({ color: colorHex });
+            const gyro = new THREE.Mesh(gyroGeo, gyroMat);
+            gyro.rotation.x = 1.1;
+            group.add(gyro);
+
+            // Orbiting Node
+            const nodeGeo = new THREE.SphereGeometry(0.04, 12, 12);
+            const nodeMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+            const node = new THREE.Mesh(nodeGeo, nodeMat);
+            node.position.x = rank === 1 ? 1.05 : 0.9;
+            gyro.add(node);
+
+            // Translucent Projection Beam to Pillar Top
+            const projGeo = new THREE.CylinderGeometry(0.5, 0.75, 1.4, 24, 1, true);
+            const projMat = new THREE.MeshBasicMaterial({
+              color: colorHex,
+              transparent: true,
+              opacity: 0.15,
+              side: THREE.DoubleSide,
+              depthWrite: false,
+              blending: THREE.AdditiveBlending
+            });
+            const proj = new THREE.Mesh(projGeo, projMat);
+            group.add(proj);
+
+            return { group, body, cap, numMesh, ring, gyro, node, proj, targetH: 2, currentH: 0.01, posX, rank };
+          };
+
+          const p2 = createPillar(2, '#94a3b8', -4.5);
+          const p1 = createPillar(1, '#f59e0b', 0);
+          const p3 = createPillar(3, '#ea580c', 4.5);
+
+          pillarGroup.add(p2.group);
+          pillarGroup.add(p1.group);
+          pillarGroup.add(p3.group);
+
+          // 7. Ambient LiDAR Point-Cloud Terrain (Cyan Telemetry Scanline)
+          const pCount = 1200;
+          const pPositions = new Float32Array(pCount * 3);
+          const pColors = new Float32Array(pCount * 3);
+          const baseColor = new THREE.Color(0xf59e0b);
+          const scanColor = new THREE.Color(0x06b6d4);
+
+          for (let i = 0; i < pCount; i++) {
+            const px = (Math.random() - 0.5) * 44;
+            const pz = -35 + Math.random() * 40;
+            const dist = Math.sqrt(px * px + pz * pz);
+            const py = -0.5 + Math.sin(px * 0.2) * Math.cos(pz * 0.2) * 1.5 - (dist > 10 ? (dist - 10) * 0.08 : 0);
+
+            pPositions[i * 3] = px;
+            pPositions[i * 3 + 1] = py;
+            pPositions[i * 3 + 2] = pz;
+
+            pColors[i * 3] = baseColor.r * 0.3;
+            pColors[i * 3 + 1] = baseColor.g * 0.3;
+            pColors[i * 3 + 2] = baseColor.b * 0.3;
+          }
+
+          const lidarGeo = new THREE.BufferGeometry();
+          lidarGeo.setAttribute('position', new THREE.BufferAttribute(pPositions, 3));
+          lidarGeo.setAttribute('color', new THREE.BufferAttribute(pColors, 3));
+
+          const lidarMat = new THREE.PointsMaterial({
+            size: 0.14,
+            vertexColors: true,
+            transparent: true,
+            opacity: 0.75,
+            blending: THREE.AdditiveBlending
+          });
+          const lidarPoints = new THREE.Points(lidarGeo, lidarMat);
+          scene.add(lidarPoints);
+
+          // 8. Golden Ember Particle System
+          const emberCount = 120;
+          const emberPos = new Float32Array(emberCount * 3);
+          const emberVels = [];
+          for (let i = 0; i < emberCount; i++) {
+            emberPos[i * 3] = (Math.random() - 0.5) * 1.8;
+            emberPos[i * 3 + 1] = Math.random() * 4 + 1;
+            emberPos[i * 3 + 2] = (Math.random() - 0.5) * 1.8;
+            emberVels.push({
+              vx: (Math.random() - 0.5) * 0.015,
+              vy: 0.02 + Math.random() * 0.03,
+              vz: (Math.random() - 0.5) * 0.015,
+              life: Math.random() * 100
+            });
+          }
+          const emberGeo = new THREE.BufferGeometry();
+          emberGeo.setAttribute('position', new THREE.BufferAttribute(emberPos, 3));
+          const emberMat = new THREE.PointsMaterial({
+            color: 0xf59e0b,
+            size: 0.12,
+            transparent: true,
+            opacity: 0.9,
+            blending: THREE.AdditiveBlending
+          });
+          const embers = new THREE.Points(emberGeo, emberMat);
+          scene.add(embers);
+
+          // Mouse Parallax
+          let mouseX = 0;
+          let mouseY = 0;
+          let targetMouseX = 0;
+          let targetMouseY = 0;
+
+          const onMouseMove = (e) => {
+            const rect = container.getBoundingClientRect();
+            targetMouseX = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+            targetMouseY = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+          };
+          window.addEventListener('mousemove', onMouseMove);
+
+          const onResize = () => {
+            if (!container) return;
+            width = container.clientWidth;
+            height = container.clientHeight;
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(width, height);
+          };
+          window.addEventListener('resize', onResize);
+
+          // Animation Loop
+          let animId;
+          let clock = new THREE.Clock();
+
+          const animate = () => {
+            const elapsedTime = clock.getElapsedTime();
+            const delta = clock.getDelta();
+
+            // Smooth Mouse Parallax
+            mouseX += (targetMouseX - mouseX) * 0.05;
+            mouseY += (targetMouseY - mouseY) * 0.05;
+
+            camera.position.x = mouseX * 1.8 + Math.sin(elapsedTime * 0.15) * 0.4;
+            camera.position.y = 4.2 - mouseY * 0.8;
+            camera.position.z = 17.5 - (isOvertake ? 1.5 : 0);
+            camera.lookAt(0, 2.6 + (isOvertake ? 0.3 : 0), 0);
+
+            // Compute Dynamic Pillar Heights based on scores
+            const s1 = first?.score || 9842;
+            const s2 = second?.score || 9510;
+            const s3 = third?.score || 9340;
+            const span = Math.max(s1 - s3, s1 * 0.03, 1);
+            const t2 = Math.min(1, Math.max(0, (s2 - s3) / span));
+            const t1 = Math.min(1, Math.max(0, (s1 - s3) / span));
+
+            p3.targetH = 2.0;
+            p2.targetH = 2.0 + 0.4 + t2 * 0.9;
+            p1.targetH = 2.0 + 0.8 + t1 * 1.1 + (isOvertake ? Math.sin(elapsedTime * 8) * 0.15 : 0);
+
+            // Update Pillars
+            [p1, p2, p3].forEach(p => {
+              p.currentH += (p.targetH - p.currentH) * 0.08;
+              const h = Math.max(0.1, p.currentH);
+
+              p.body.scale.y = h;
+              p.body.position.y = h * 0.5;
+              p.cap.position.y = h + 0.04;
+              p.numMesh.position.y = h - 0.7;
+
+              // Hologram Badge position above pillar
+              const badgeY = h + 1.6;
+              p.ring.position.y = badgeY;
+              p.ring.rotation.z -= 0.015;
+              p.gyro.position.y = badgeY;
+              p.gyro.rotation.z += 0.025;
+
+              p.proj.position.y = h + 0.7;
+              p.proj.scale.y = 1.0;
+            });
+
+            // Update Beam on 1st Place
+            beam.position.y = p1.currentH + 5.5;
+            mainSpot.intensity = 2.4 + (isOvertake ? 1.8 : 0);
+
+            // Update LiDAR Telemetry Scanning Line
+            const sweepZ = -35 + ((elapsedTime * 8) % 40);
+            const posAttr = lidarGeo.attributes.position;
+            const colAttr = lidarGeo.attributes.color;
+            for (let i = 0; i < pCount; i++) {
+              const z = posAttr.getZ(i);
+              const distToSweep = Math.abs(z - sweepZ);
+              if (distToSweep < 2.5) {
+                const intensity = 1 - distToSweep / 2.5;
+                colAttr.setXYZ(i, scanColor.r * intensity, scanColor.g * intensity, scanColor.b * intensity);
+              } else {
+                colAttr.setXYZ(i, baseColor.r * 0.25, baseColor.g * 0.25, baseColor.b * 0.25);
+              }
+            }
+            colAttr.needsUpdate = true;
+
+            // Update Embers
+            const emberPosAttr = emberGeo.attributes.position;
+            for (let i = 0; i < emberCount; i++) {
+              let ey = emberPosAttr.getY(i) + emberVels[i].vy;
+              let ex = emberPosAttr.getX(i) + emberVels[i].vx;
+              let ez = emberPosAttr.getZ(i) + emberVels[i].vz;
+              if (ey > p1.currentH + 4.5 || ey < p1.currentH + 0.2) {
+                ey = p1.currentH + 0.2;
+                ex = (Math.random() - 0.5) * 1.8;
+                ez = (Math.random() - 0.5) * 1.8;
+              }
+              emberPosAttr.setXYZ(i, ex, ey, ez);
+            }
+            emberPosAttr.needsUpdate = true;
+
+            // 9. Project 3D Pillar Top Coordinates to 2D Screen Percentages for HTML Badges
+            const projectToScreen = (posX, posY) => {
+              const v = new THREE.Vector3(posX, posY, 0);
+              v.project(camera);
+              return {
+                x: (v.x * 0.5 + 0.5) * 100,
+                y: (-v.y * 0.5 + 0.5) * 100
+              };
+            };
+
+            setOverlayPos({
+              first: projectToScreen(p1.posX, p1.currentH + 1.45),
+              second: projectToScreen(p2.posX, p2.currentH + 1.45),
+              third: projectToScreen(p3.posX, p3.currentH + 1.45)
+            });
+
+            renderer.render(scene, camera);
+            animId = requestAnimationFrame(animate);
+          };
+
+          animate();
+
+          return () => {
+            window.removeEventListener('mousemove', onMouseMove);
+            window.removeEventListener('resize', onResize);
+            cancelAnimationFrame(animId);
+            if (renderer.domElement && container.contains(renderer.domElement)) {
+              container.removeChild(renderer.domElement);
+            }
+            renderer.dispose();
+          };
+        }, [isOvertake, first, second, third]);
+
+        return (
+          <div className="relative w-full flex flex-col items-center select-none font-['Times_New_Roman',Times,serif]">
+            {/* Full-Window 3D Hero Podium Stage */}
+            <div className="relative w-full max-w-7xl mx-auto h-[520px] sm:h-[580px] md:h-[640px] lg:h-[700px] overflow-hidden px-2">
+              {/* 3D WebGL Canvas Container */}
+              <div ref={mountRef} className="absolute inset-0 w-full h-full block bg-transparent pointer-events-auto" />
+
+              {/* Overtake / Evaluation Complete Alert Banner */}
+              {isOvertake ? (
+                <div className="absolute top-1 left-1/2 -translate-x-1/2 px-5 py-1.5 rounded-full bg-gradient-to-r from-[#f59e0b] via-[#fbbf24] to-[#ea580c] text-black font-black text-xs tracking-[0.25em] uppercase shadow-[0_0_30px_#f59e0b] animate-bounce z-30">
+                  ⚡ OVERTAKE! NEW LEADER: {first?.teamName}
+                </div>
+              ) : (
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full border border-[#f59e0b]/50 bg-[#07080b]/95 text-[11px] font-black tracking-[0.2em] uppercase text-[#f59e0b] shadow-[0_0_15px_rgba(245,158,11,0.25)] flex items-center gap-2 z-20">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#f59e0b] animate-ping" />
+                  🏆 EVALUATION COMPLETE • OFFICIAL TOP 3 CEREMONY
+                </div>
+              )}
+
+              {/* 1st Place Floating Crisp HTML Badge Overlay */}
+              {first && (
+                <div
+                  onClick={() => onSelectTeam && onSelectTeam(first)}
+                  style={{
+                    left: `${overlayPos.first.x}%`,
+                    top: `${overlayPos.first.y}%`,
+                    transform: 'translate(-50%, -100%)'
+                  }}
+                  className="absolute cursor-pointer transition-transform duration-300 hover:scale-105 z-20 group pointer-events-auto"
+                >
+                  <div className="flex flex-col items-center text-center p-3.5 sm:p-4 rounded-xl border border-[#f59e0b]/90 bg-[#07080b]/90 backdrop-blur-md shadow-[0_0_35px_rgba(245,158,11,0.45)] min-w-[210px] sm:min-w-[240px]">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="px-2.5 py-0.5 rounded text-[11px] font-black uppercase bg-[#f59e0b] text-black tracking-wider">
+                        1st PLACE
+                      </span>
+                      <span className="text-xs font-bold text-[#10b981] flex items-center">
+                        ▲ {first.rankChange >= 0 ? `+${first.rankChange}` : first.rankChange}
+                      </span>
+                    </div>
+                    <h3 className="text-base sm:text-lg font-black uppercase text-white tracking-wide truncate max-w-[220px]">
+                      {first.teamName}
+                    </h3>
+                    <span className="text-[11px] font-semibold text-[#9ca3af] uppercase tracking-wider mb-1">
+                      {first.institutionCode || first.institution}
+                    </span>
+                    <div className="text-2xl sm:text-3xl font-black text-[#fbbf24] tracking-tight drop-shadow-[0_0_12px_rgba(251,191,36,0.6)]">
+                      {first.score.toLocaleString()}{' '}
+                      <span className="text-xs font-bold text-[#9ca3af] uppercase">PTS</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* 2nd Place Floating Crisp HTML Badge Overlay */}
+              {second && (
+                <div
+                  onClick={() => onSelectTeam && onSelectTeam(second)}
+                  style={{
+                    left: `${overlayPos.second.x}%`,
+                    top: `${overlayPos.second.y}%`,
+                    transform: 'translate(-50%, -100%)'
+                  }}
+                  className="absolute cursor-pointer transition-transform duration-300 hover:scale-105 z-10 group pointer-events-auto"
+                >
+                  <div className="flex flex-col items-center text-center p-3 rounded-xl border border-[#94a3b8]/80 bg-[#07080b]/90 backdrop-blur-md shadow-[0_0_25px_rgba(148,163,184,0.3)] min-w-[175px] sm:min-w-[200px]">
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-[#94a3b8] text-black tracking-wider">
+                        2nd PLACE
+                      </span>
+                      <span className="text-[11px] font-bold text-[#10b981] flex items-center">
+                        ▲ {second.rankChange >= 0 ? `+${second.rankChange}` : second.rankChange}
+                      </span>
+                    </div>
+                    <h3 className="text-sm sm:text-base font-black uppercase text-white tracking-wide truncate max-w-[185px]">
+                      {second.teamName}
+                    </h3>
+                    <span className="text-[10px] font-semibold text-[#9ca3af] uppercase tracking-wider mb-1">
+                      {second.institutionCode || second.institution}
+                    </span>
+                    <div className="text-xl sm:text-2xl font-black text-[#e2e8f0] tracking-tight">
+                      {second.score.toLocaleString()}{' '}
+                      <span className="text-[10px] font-bold text-[#9ca3af] uppercase">PTS</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* 3rd Place Floating Crisp HTML Badge Overlay */}
+              {third && (
+                <div
+                  onClick={() => onSelectTeam && onSelectTeam(third)}
+                  style={{
+                    left: `${overlayPos.third.x}%`,
+                    top: `${overlayPos.third.y}%`,
+                    transform: 'translate(-50%, -100%)'
+                  }}
+                  className="absolute cursor-pointer transition-transform duration-300 hover:scale-105 z-10 group pointer-events-auto"
+                >
+                  <div className="flex flex-col items-center text-center p-3 rounded-xl border border-[#ea580c]/80 bg-[#07080b]/90 backdrop-blur-md shadow-[0_0_25px_rgba(234,88,12,0.35)] min-w-[175px] sm:min-w-[200px]">
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-[#ea580c] text-white tracking-wider">
+                        3rd PLACE
+                      </span>
+                      <span className="text-[11px] font-bold text-[#ef4444] flex items-center">
+                        ▼ {third.rankChange < 0 ? third.rankChange : `+${third.rankChange}`}
+                      </span>
+                    </div>
+                    <h3 className="text-sm sm:text-base font-black uppercase text-white tracking-wide truncate max-w-[185px]">
+                      {third.teamName}
+                    </h3>
+                    <span className="text-[10px] font-semibold text-[#9ca3af] uppercase tracking-wider mb-1">
+                      {third.institutionCode || third.institution}
+                    </span>
+                    <div className="text-xl sm:text-2xl font-black text-[#fdba74] tracking-tight">
+                      {third.score.toLocaleString()}{' '}
+                      <span className="text-[10px] font-bold text-[#9ca3af] uppercase">PTS</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Scroll Down Indicator for Remaining Teams */}
+            <div 
+              className="w-full flex flex-col items-center justify-center my-3 cursor-pointer group"
+              onClick={() => {
+                window.scrollBy({ top: 560, behavior: 'smooth' });
+              }}
+            >
+              <div className="flex items-center gap-2 px-5 py-2 rounded-full border border-[#f59e0b]/40 bg-[#0d1017]/90 hover:border-[#f59e0b] hover:bg-[#161b26] text-xs font-bold tracking-[0.2em] text-[#f59e0b] uppercase shadow-[0_0_15px_rgba(245,158,11,0.2)] transition-all duration-300">
+                <span className="animate-bounce">▼</span>
+                <span>SCROLL TO VIEW OTHER TEAM FINAL POSITIONING (#4 — #10)</span>
+                <span className="animate-bounce">▼</span>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      // Metric Visual SVG component
+      function MetricVisual({ type, label }) {
+        const renderGlyph = () => {
+          switch (type) {
+            case 'lidar':
+              return (
+                <svg viewBox="0 0 40 24" className="w-7 h-5 flex-shrink-0">
+                  <path d="M 4,4 L 36,4 L 20,12 L 36,20 L 4,20 L 20,12 Z" fill="none" stroke="#f59e0b" strokeWidth="1.5" />
+                  <line x1="8" y1="7" x2="32" y2="7" stroke="#f59e0b" strokeWidth="0.8" strokeDasharray="2 1" />
+                  <line x1="12" y1="10" x2="28" y2="10" stroke="#f59e0b" strokeWidth="0.8" strokeDasharray="2 1" />
+                  <line x1="12" y1="14" x2="28" y2="14" stroke="#f59e0b" strokeWidth="0.8" strokeDasharray="2 1" />
+                  <line x1="8" y1="17" x2="32" y2="17" stroke="#f59e0b" strokeWidth="0.8" strokeDasharray="2 1" />
+                </svg>
+              );
+            case 'pointcloud':
+              return (
+                <svg viewBox="0 0 36 24" className="w-7 h-5 flex-shrink-0">
+                  <circle cx="6" cy="18" r="1.5" fill="#f59e0b" />
+                  <circle cx="12" cy="16" r="1.5" fill="#f59e0b" />
+                  <circle cx="18" cy="12" r="1.5" fill="#f59e0b" />
+                  <circle cx="24" cy="8" r="1.5" fill="#f59e0b" />
+                  <circle cx="30" cy="5" r="1.5" fill="#fbbf24" />
+                </svg>
+              );
+            case 'neural':
+              return (
+                <svg viewBox="0 0 36 24" className="w-7 h-5 flex-shrink-0">
+                  <line x1="6" y1="6" x2="18" y2="12" stroke="#f59e0b" strokeWidth="1" opacity="0.7" />
+                  <line x1="6" y1="18" x2="18" y2="12" stroke="#f59e0b" strokeWidth="1" opacity="0.7" />
+                  <line x1="18" y1="12" x2="30" y2="6" stroke="#f59e0b" strokeWidth="1" opacity="0.7" />
+                  <line x1="18" y1="12" x2="30" y2="18" stroke="#f59e0b" strokeWidth="1" opacity="0.7" />
+                  <circle cx="6" cy="6" r="2" fill="#f59e0b" />
+                  <circle cx="6" cy="18" r="2" fill="#f59e0b" />
+                  <circle cx="18" cy="12" r="2.5" fill="#fbbf24" />
+                  <circle cx="30" cy="6" r="2.5" fill="#f59e0b" />
+                  <circle cx="30" cy="18" r="2.5" fill="#f59e0b" />
+                </svg>
+              );
+            case 'trajectory':
+              return (
+                <svg viewBox="0 0 36 24" className="w-7 h-5 flex-shrink-0">
+                  <path d="M 4,18 C 12,20 16,4 32,8" fill="none" stroke="#f59e0b" strokeWidth="1.5" />
+                  <circle cx="4" cy="18" r="2" fill="#fbbf24" />
+                  <circle cx="32" cy="8" r="2.5" fill="#fbbf24" />
+                </svg>
+              );
+            case 'grid':
+              return (
+                <svg viewBox="0 0 36 24" className="w-7 h-5 flex-shrink-0">
+                  <rect x="6" y="2" width="24" height="20" fill="none" stroke="#f59e0b" strokeWidth="1" opacity="0.8" />
+                  <line x1="14" y1="2" x2="14" y2="22" stroke="#f59e0b" strokeWidth="0.8" opacity="0.6" />
+                  <line x1="22" y1="2" x2="22" y2="22" stroke="#f59e0b" strokeWidth="0.8" opacity="0.6" />
+                  <line x1="6" y1="8.5" x2="30" y2="8.5" stroke="#f59e0b" strokeWidth="0.8" opacity="0.6" />
+                  <line x1="6" y1="15.5" x2="30" y2="15.5" stroke="#f59e0b" strokeWidth="0.8" opacity="0.6" />
+                </svg>
+              );
+            case 'optimization':
+              return (
+                <svg viewBox="0 0 36 24" className="w-7 h-5 flex-shrink-0">
+                  <path d="M 6,19 A 12,12 0 0,1 24,9" fill="none" stroke="#f59e0b" strokeWidth="2" />
+                  <line x1="18" y1="19" x2="24" y2="11" stroke="#fbbf24" strokeWidth="2" />
+                  <circle cx="18" cy="19" r="2" fill="#fbbf24" />
+                </svg>
+              );
+            case 'slam':
+            default:
+              return (
+                <svg viewBox="0 0 36 24" className="w-7 h-5 flex-shrink-0">
+                  <polygon points="18,4 30,19 6,19" fill="none" stroke="#f59e0b" strokeWidth="1.2" />
+                  <circle cx="18" cy="4" r="2" fill="#fbbf24" />
+                  <circle cx="30" cy="19" r="2" fill="#fbbf24" />
+                  <circle cx="6" cy="19" r="2" fill="#fbbf24" />
+                </svg>
+              );
+          }
+        };
+
+        return (
+          <div className="flex items-center gap-2.5 overflow-hidden">
+            {renderGlyph()}
+            <span className="text-xs sm:text-sm text-[#d1d5db] tracking-wide truncate">
+              {label || 'Telemetry Data Feed'}
+            </span>
+          </div>
+        );
+      }
+
+      // Leaderboard Row
+      function LeaderboardRow({ team, isEven }) {
+        const code = (team.institutionCode || team.institution).toUpperCase();
+
+        const renderLogo = () => {
+          if (code.includes('MIT')) {
+            return <div className="w-8 h-8 rounded bg-[#800000]/30 border border-[#ef4444]/60 flex items-center justify-center text-[10px] font-black text-[#ef4444]">MIT</div>;
+          }
+          if (code.includes('STANFORD')) {
+            return <div className="w-8 h-8 rounded-full bg-[#8c1515]/30 border border-[#f87171]/60 flex items-center justify-center text-xs font-black text-[#f87171]">S</div>;
+          }
+          if (code.includes('IIT') || code.includes('DELHI')) {
+            return <div className="w-8 h-8 rounded-full bg-[#1e3a8a]/40 border border-[#60a5fa]/60 flex items-center justify-center text-[9px] font-black text-[#93c5fd]">IIT</div>;
+          }
+          if (code.includes('CMU')) {
+            return <div className="w-8 h-8 rounded bg-[#990000]/40 border border-[#fca5a5]/60 flex items-center justify-center text-[9px] font-black text-[#fca5a5]">CMU</div>;
+          }
+          if (code.includes('OXFORD')) {
+            return <div className="w-8 h-8 rounded-full bg-[#002147]/60 border border-[#93c5fd]/50 flex items-center justify-center text-[9px] font-bold text-[#bfdbfe]">OXF</div>;
+          }
+          if (code.includes('TUM')) {
+            return <div className="w-8 h-8 rounded bg-[#0065BD]/40 border border-[#60a5fa]/60 flex items-center justify-center text-[9px] font-black text-[#60a5fa]">TUM</div>;
+          }
+          if (code.includes('CALTECH')) {
+            return <div className="w-8 h-8 rounded-full bg-[#FF6C0C]/20 border border-[#fb923c]/70 flex items-center justify-center text-[10px] font-bold text-[#fb923c]">CIT</div>;
+          }
+          return <div className="w-8 h-8 rounded-full bg-[#1f2937] border border-[#f59e0b]/40 flex items-center justify-center text-[10px] font-bold text-[#f59e0b]">{code.slice(0, 3)}</div>;
+        };
+
+        const statusClass = team.status === 'CALCULATING...' ? 'text-[#f59e0b] animate-pulse' : team.status === 'COOLDOWN' ? 'text-[#9ca3af] opacity-60' : 'text-[#f59e0b] font-semibold';
+
+        return (
+          <div className={`group relative grid grid-cols-12 items-center px-4 sm:px-6 py-3.5 border-b border-[#1c212c]/80 transition-all duration-300 ${isEven ? 'bg-[#0a0c10]/70' : 'bg-[#0d1017]/70'} hover:bg-[#151922] hover:border-[#f59e0b]/30`}>
+            {/* Rank */}
+            <div className="col-span-2 sm:col-span-1 flex items-center">
+              <span className="text-lg sm:text-xl font-black text-white group-hover:text-[#f59e0b] transition-colors">
+                #{team.rank}
+              </span>
+            </div>
+
+            {/* Team / Inst */}
+            <div className="col-span-6 sm:col-span-4 flex items-center gap-3 pr-2">
+              <div className="flex-shrink-0">{renderLogo()}</div>
+              <div className="flex flex-col min-w-0">
+                <span className="text-sm sm:text-base font-bold text-white uppercase tracking-wider truncate">
+                  {team.teamName}
+                </span>
+                <span className="text-xs font-medium text-[#9ca3af] tracking-wide truncate">
+                  {team.institution}
+                </span>
+              </div>
+            </div>
+
+            {/* Score */}
+            <div className="col-span-4 sm:col-span-2 text-right sm:text-left">
+              <ScoreCounter score={team.score} className="text-base sm:text-lg text-white justify-end sm:justify-start" />
+            </div>
+
+            {/* Metrics */}
+            <div className="hidden sm:flex sm:col-span-3 items-center pr-3">
+              <MetricVisual type={team.metricType} label={team.metricLabel} />
+            </div>
+
+            {/* Change */}
+            <div className="hidden sm:flex sm:col-span-1 items-center justify-center text-sm font-bold">
+              {team.rankChange > 0 ? (
+                <span className="text-[#f59e0b]">+{team.rankChange}</span>
+              ) : team.rankChange < 0 ? (
+                <span className="text-[#ef4444]">{team.rankChange}</span>
+              ) : (
+                <span className="text-[#9ca3af] opacity-60">0</span>
+              )}
+            </div>
+
+            {/* Status */}
+            <div className="hidden sm:flex sm:col-span-1 items-center justify-end">
+              <span className={`text-xs font-bold tracking-wider uppercase ${statusClass}`}>
+                {team.status}
+              </span>
+            </div>
+          </div>
+        );
+      }
+
+      // Leaderboard Table
+      function LeaderboardTable({ teams }) {
+        const tableTeams = teams.filter(t => t.rank > 3);
+
+        return (
+          <div className="w-full max-w-6xl mx-auto px-4 pb-12 select-none relative z-10">
+            <div className="w-full rounded-xl border border-[#2d2218]/90 bg-[#090b10]/85 backdrop-blur-md shadow-[0_12px_40px_rgba(0,0,0,0.7)] overflow-hidden">
+              <div className="grid grid-cols-12 items-center px-4 sm:px-6 py-3.5 border-b border-[#2d2218] bg-gradient-to-r from-[#171310] via-[#120f0d] to-[#171310] text-xs sm:text-sm font-bold tracking-[0.15em] text-[#9ca3af] uppercase">
+                <div className="col-span-2 sm:col-span-1 text-left text-[#d1d5db]">RANK</div>
+                <div className="col-span-6 sm:col-span-4 text-left text-[#d1d5db]">TEAM / INSTITUTION</div>
+                <div className="col-span-4 sm:col-span-2 text-right sm:text-left text-[#d1d5db]">ROUND SCORE</div>
+                <div className="hidden sm:block sm:col-span-3 text-left text-[#d1d5db]">METRICS / GAIN</div>
+                <div className="hidden sm:block sm:col-span-1 text-center text-[#d1d5db]">RANK CHANGE</div>
+                <div className="hidden sm:block sm:col-span-1 text-right text-[#d1d5db]">STATUS</div>
+              </div>
+
+              <div className="divide-y divide-[#181c26]/60">
+                {tableTeams.map((team, idx) => (
+                  <LeaderboardRow key={team.id || team.rank} team={team} isEven={idx % 2 === 1} />
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      // Main App Root
+      function MainApp() {
+        const [teams, setTeams] = useState(INITIAL_TEAMS);
+        const [connectionState, setConnectionState] = useState('LIVE');
+        const [dataSource, setDataSource] = useState('mock');
+        const [isSplineEnabled, setIsSplineEnabled] = useState(true);
+        const [isSoundEnabled, setIsSoundEnabled] = useState(true);
+        const [isConfigOpen, setIsConfigOpen] = useState(false);
+        const [isSimulatorOpen, setIsSimulatorOpen] = useState(false);
+        const [isEvaluationConcluded, setIsEvaluationConcluded] = useState(false);
+        const [sheetId, setSheetId] = useState('');
+        const [pollInterval, setPollInterval] = useState(3500);
+
+        const currentDate = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).toUpperCase();
+
+        const syncGoogleSheet = useCallback(async () => {
+          if (dataSource !== 'google-sheets' || !sheetId || !sheetId.trim()) return;
+          setConnectionState(prev => (prev === 'LIVE' ? 'SYNCING' : prev));
+          try {
+            const url = `https://docs.google.com/spreadsheets/d/${sheetId.trim()}/gviz/tq?tqx=out:json&tq=${encodeURIComponent('select *')}&_t=${Date.now()}`;
+            const res = await fetch(url, { headers: { 'Cache-Control': 'no-cache' } });
+            if (res.ok) {
+              const text = await res.text();
+              const match = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]+)\);/);
+              if (match) {
+                const data = JSON.parse(match[1]);
+                if (data.table && data.table.rows) {
+                  let headers = (data.table.cols || []).map(c => (c.label || c.id || '').trim().toLowerCase());
+                  
+                  const hasNamed = headers.some(h => 
+                    h.includes('team') || h.includes('name') || h.includes('score') || h.includes('inst') || h.includes('total') || h.includes('task')
+                  );
+                  let startRow = 0;
+                  if (!hasNamed && data.table.rows.length > 0 && data.table.rows[0].c) {
+                    const r0 = data.table.rows[0].c.map(cell => {
+                      const v = cell ? (cell.f !== undefined ? cell.f : cell.v) : '';
+                      return String(v || '').trim().toLowerCase();
+                    });
+                    if (r0.some(v => v.includes('team') || v.includes('score') || v.includes('name') || v.includes('inst') || v.includes('total'))) {
+                      headers = r0;
+                      startRow = 1;
+                    }
+                  }
+
+                  const rawRows = [];
+                  for (let rIdx = startRow; rIdx < data.table.rows.length; rIdx++) {
+                    const row = data.table.rows[rIdx];
+                    if (!row || !row.c) continue;
+                    const rowObj = {};
+                    row.c.forEach((cell, idx) => {
+                      const h = headers[idx] || `col_${idx}`;
+                      const val = cell ? (cell.v !== null && cell.v !== undefined ? cell.v : (cell.f !== undefined ? cell.f : '')) : '';
+                      const str = String(val !== null && val !== undefined ? val : '').trim();
+                      rowObj[h] = str;
+                      const clean = h.replace(/[^a-z0-9]/g, '');
+                      if (clean) rowObj[clean] = str;
+                      rowObj[String.fromCharCode(97 + idx)] = str;
+                      rowObj[`col_${idx}`] = str;
+                    });
+                    if (Object.values(rowObj).some(v => v.length > 0)) {
+                      rawRows.push(rowObj);
+                    }
+                  }
+
+                  const invalidTerms = new Set([
+                    'female', 'male', 'gender', 'class level', 'class_level', 'major', 'extracurricular', 'extracurricular activity',
+                    'home state', 'home_state', 'freshman', 'sophomore', 'junior', 'senior', 'student', 'students',
+                    'team name', 'team_name', 'name', 'rank', 'status', 'total score', 'task score', 'score',
+                    'penalty', 'tasks completed', 'last updated', 'institute', 'institution', 'college',
+                    'university', 'total', 'average', 'avg', 'summary', 'count', 'n/a', 'na', 'null', 'undefined'
+                  ]);
+
+                  const isInvalid = (str) => {
+                    if (!str || typeof str !== 'string') return true;
+                    const c = str.trim().toLowerCase();
+                    if (c.length < 2) return true;
+                    if (invalidTerms.has(c)) return true;
+                    if (/^[0-9]+\.\s*(freshman|sophomore|junior|senior)/i.test(c)) return true;
+                    if (/^[^a-zA-Z0-9]+$/.test(c) || /^[0-9]+$/.test(c)) return true;
+                    return false;
+                  };
+
+                  const findVal = (row, keys) => {
+                    for (const k of keys) {
+                      const keyLower = k.toLowerCase().trim();
+                      for (const [rk, val] of Object.entries(row)) {
+                        if (rk.toLowerCase().trim() === keyLower && val && val.length > 0) return val;
+                      }
+                    }
+                    for (const k of keys) {
+                      const keyClean = k.toLowerCase().replace(/[^a-z0-9]/g, '');
+                      for (const [rk, val] of Object.entries(row)) {
+                        if (rk.toLowerCase().replace(/[^a-z0-9]/g, '') === keyClean && val && val.length > 0) return val;
+                      }
+                    }
+                    for (const k of keys) {
+                      const keyLower = k.toLowerCase().trim();
+                      for (const [rk, val] of Object.entries(row)) {
+                        if (rk.toLowerCase().includes(keyLower) && val && val.length > 0) return val;
+                      }
+                    }
+                    return '';
+                  };
+
+                  const parsed = rawRows.map((r, i) => {
+                    let name = findVal(r, ['team name', 'team_name', 'teamname', 'team', 'participant', 'participants', 'squad', 'team/institution', 'team / institution']);
+                    if (!name) {
+                      const candidate = findVal(r, ['name']);
+                      if (candidate && !isInvalid(candidate)) {
+                        name = candidate;
+                      }
+                    }
+                    if (!name || isInvalid(name)) return null;
+
+                    let inst = findVal(r, ['institute', 'institution', 'college', 'university', 'org', 'inst']);
+                    if (!inst || isInvalid(inst)) inst = 'Autonomous Systems Lab';
+                    
+                    const rawSc = findVal(r, ['total score', 'total_score', 'totalscore', 'final score', 'round score', 'score', 'points', 'total points', 'pts', 'round_score']);
+                    const cleanSc = rawSc.replace(/,/g, '').replace(/[^0-9.-]/g, '');
+                    const score = cleanSc !== '' && !isNaN(parseFloat(cleanSc)) ? parseFloat(cleanSc) : 0;
+
+                    const taskSc = findVal(r, ['task score', 'task_score', 'taskscore']);
+                    const penalty = findVal(r, ['penalty', 'penalties', 'deduction']);
+                    const tasks = findVal(r, ['tasks completed', 'tasks_completed', 'tasks', 'completed']);
+
+                    let metric = findVal(r, ['metric', 'metrics', 'metrics / gain', 'telemetry', 'accuracy', 'sensor']);
+                    if (!metric) {
+                      const parts = [];
+                      if (tasks && !isNaN(Number(tasks.replace(/[^0-9]/g, '')))) parts.push(`${tasks.replace(/[^0-9]/g, '')} Tasks`);
+                      if (taskSc && !isNaN(Number(taskSc.replace(/[^0-9.-]/g, '')))) parts.push(`Task: ${taskSc}`);
+                      if (penalty && penalty !== '0' && !isNaN(Number(penalty.replace(/[^0-9.-]/g, '')))) parts.push(`(-${penalty} pen)`);
+                      metric = parts.length > 0 ? parts.join(' • ') : `LiDAR / Sensor accuracy: ${(95 + (i % 5) * 0.9).toFixed(1)}%`;
+                    }
+
+                    const stRaw = findVal(r, ['status', 'state', 'condition']).toUpperCase();
+                    let status = 'ACTIVE';
+                    if (stRaw.includes('QUALIF')) status = 'ACTIVE';
+                    else if (stRaw.includes('IN PROG') || stRaw.includes('CALCULAT')) status = 'CALCULATING...';
+                    else if (stRaw.includes('COOL') || stRaw.includes('PAUSE')) status = 'COOLDOWN';
+                    else if (stRaw.includes('OFFLINE')) status = 'OFFLINE';
+
+                    let instCode = inst;
+                    if (inst.length > 12) {
+                      if (inst.toLowerCase().includes('delhi') && inst.toLowerCase().includes('nit')) instCode = 'NIT Delhi';
+                      else if (inst.toLowerCase().includes('delhi') && inst.toLowerCase().includes('iit')) instCode = 'IIT Delhi';
+                      else if (inst.toLowerCase().includes('delhi') && inst.toLowerCase().includes('iiit')) instCode = 'IIIT Delhi';
+                      else if (inst.toLowerCase().includes('roorkee')) instCode = 'IIT Roorkee';
+                      else if (inst.toLowerCase().includes('pilani') || inst.toLowerCase().includes('bits')) instCode = 'BITS Pilani';
+                      else if (inst.toLowerCase().includes('vellore') || inst.toLowerCase().includes('vit')) instCode = 'VIT Vellore';
+                      else if (inst.toLowerCase().includes('manipal')) instCode = 'Manipal';
+                      else if (inst.toLowerCase().includes('hyderabad')) instCode = 'IIIT Hyd';
+                      else {
+                        instCode = inst.split(' ').map(w => w[0]).join('').slice(0, 5).toUpperCase();
+                      }
+                    }
+
+                    const cleanSlug = name.toLowerCase().replace(/[^a-z0-9]/g, '-');
+                    return {
+                      id: `team-${cleanSlug}-${i + 1}`,
+                      rank: i + 1,
+                      previousRank: i + 1,
+                      teamName: name.toUpperCase(),
+                      institution: inst,
+                      institutionCode: instCode,
+                      score,
+                      previousScore: score,
+                      metricLabel: metric,
+                      metricType: metric.toLowerCase().includes('neural') ? 'neural' : metric.toLowerCase().includes('point') ? 'pointcloud' : 'lidar',
+                      round: 'RND 4',
+                      rankChange: 0,
+                      status
+                    };
+                  }).filter(Boolean);
+
+                  if (parsed.length > 0) {
+                    parsed.sort((a, b) => b.score - a.score);
+                    const finalTeams = parsed.map((t, idx) => ({
+                      ...t,
+                      rank: idx + 1,
+                      previousRank: idx + 1
+                    }));
+                    setTeams(finalTeams);
+                    setConnectionState('LIVE');
+                  }
+                }
+              }
+            }
+          } catch (e) {
+            setConnectionState('DELAYED');
+          }
+        }, [dataSource, sheetId]);
+
+        useEffect(() => {
+          if (dataSource !== 'google-sheets') return;
+          syncGoogleSheet();
+          const timer = setInterval(syncGoogleSheet, pollInterval);
+          return () => clearInterval(timer);
+        }, [dataSource, pollInterval, syncGoogleSheet]);
+
+        return (
+          <div className="min-h-screen w-full bg-[#07080b] text-white flex flex-col justify-between relative overflow-x-hidden antialiased">
+            <SplineBackground isSplineEnabled={isSplineEnabled} />
+
+            <div className="relative z-10 flex flex-col min-h-screen">
+              <Header
+                connectionState={connectionState}
+                currentDate={currentDate}
+                onOpenConfig={() => setIsConfigOpen(true)}
+                onOpenSimulator={() => setIsSimulatorOpen(true)}
+                isSoundEnabled={isSoundEnabled}
+                onToggleSound={() => setIsSoundEnabled(!isSoundEnabled)}
+                onManualRefresh={syncGoogleSheet}
+                isEvaluationConcluded={isEvaluationConcluded}
+                onToggleEvaluationConcluded={setIsEvaluationConcluded}
+              />
+
+              <div className="w-full max-w-7xl mx-auto px-4 pt-1">
+                <HeroSection isEvaluationConcluded={isEvaluationConcluded} />
+              </div>
+
+              {/* Stepped 2D Podium Cards by Default, or 3D Three.js Stadium Stage when Evaluation Ends */}
+              {!isEvaluationConcluded ? (
+                <Podium2D teams={teams} />
+              ) : (
+                <div className="w-full flex flex-col items-center">
+                  <Podium3D teams={teams} />
+                </div>
+              )}
+
+              <LeaderboardTable teams={teams} />
+
+              <footer className="w-full py-2.5 px-6 border-t border-[#1c212c]/60 bg-[#07080b]/90 backdrop-blur-md flex flex-col sm:flex-row items-center justify-between text-xs text-[#6b7280]">
+                <div className="flex items-center gap-3">
+                  <span className="text-[#f59e0b]/80">● KINETICS 2026 AUTONOMOUS ROBOTICS DASHBOARD</span>
+                  <span className="hidden md:inline">•</span>
+                  <span className="hidden md:inline">SYSTEM STATUS: {isEvaluationConcluded ? 'EVALUATION CONCLUDED' : 'OPTIMAL'}</span>
+                </div>
+                <div className="flex items-center gap-4 mt-1 sm:mt-0">
+                  <span>ENGINE: {dataSource.toUpperCase()}</span>
+                  <span>POLL: {pollInterval}ms</span>
+                  <span>MODE: {isEvaluationConcluded ? '3D CEREMONY' : 'LIVE DASHBOARD'}</span>
+                </div>
+              </footer>
+            </div>
+
+            {/* Simulator Drawer */}
+            {isSimulatorOpen && (
+              <div className="fixed inset-y-0 right-0 z-50 w-80 sm:w-96 bg-[#0c0f16] border-l border-[#f59e0b]/40 shadow-[-10px_0_30px_rgba(0,0,0,0.8)] flex flex-col justify-between animate-slideLeft">
+                <div className="px-5 py-4 border-b border-[#1f293d] flex items-center justify-between bg-[#111622]">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[#f59e0b]">⚡</span>
+                    <h3 className="text-base font-bold text-white uppercase">Live Event Simulator</h3>
+                  </div>
+                  <button onClick={() => setIsSimulatorOpen(false)} className="p-1 text-[#9ca3af] hover:text-white">✕</button>
+                </div>
+                <div className="p-5 space-y-4 overflow-y-auto flex-1">
+                  <p className="text-xs text-[#9ca3af] leading-relaxed">
+                    Test live score count-ups, rank overtakes, sound triggers, and final 3D podium presentation reveal.
+                  </p>
+
+                  {/* Evaluation Concluded Trigger */}
+                  <div className="p-3.5 bg-gradient-to-b from-[#1a1510] to-[#111622] rounded-lg border border-[#f59e0b]/60 space-y-2.5 shadow-[0_0_16px_rgba(245,158,11,0.15)]">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-[#f59e0b] uppercase tracking-wider flex items-center gap-1.5">
+                        🏆 Competition Evaluation
+                      </span>
+                      <span className={`text-[10px] px-2 py-0.5 rounded font-black uppercase ${isEvaluationConcluded ? 'bg-[#f59e0b] text-black shadow-[0_0_10px_#f59e0b]' : 'bg-[#22c55e]/20 text-[#4ade80] border border-[#22c55e]/40'}`}>
+                        {isEvaluationConcluded ? '3D CEREMONY' : 'LIVE 2D'}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-[#9ca3af] leading-relaxed">
+                      {isEvaluationConcluded
+                        ? 'Evaluation ended. Final top 3 rankings are active in the 3D stadium stage.'
+                        : 'Evaluation in progress. Click to lock final rankings and launch 3D podium.'}
+                    </p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        onClick={() => setIsEvaluationConcluded(true)}
+                        className={`py-2 px-2.5 rounded border text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                          isEvaluationConcluded
+                            ? 'bg-[#f59e0b] text-black border-[#f59e0b] shadow-[0_0_12px_#f59e0b]'
+                            : 'bg-[#f59e0b]/15 text-[#f59e0b] border-[#f59e0b]/50 hover:bg-[#f59e0b]/30'
+                        }`}
+                      >
+                        🏆 End & Reveal 3D
+                      </button>
+                      <button
+                        onClick={() => setIsEvaluationConcluded(false)}
+                        className={`py-2 px-2.5 rounded border text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                          !isEvaluationConcluded
+                            ? 'bg-[#22c55e]/25 text-[#4ade80] border-[#22c55e]'
+                            : 'bg-[#1f2937] text-[#9ca3af] border-[#374151] hover:text-white'
+                        }`}
+                      >
+                        ↺ Live 2D View
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="p-3 bg-[#111622] rounded-lg border border-[#1f293d] space-y-2">
+                    <span className="text-xs font-bold text-white block">1. Score Surge</span>
+                    <button
+                      onClick={() => {
+                        const randomIdx = Math.floor(Math.random() * teams.length);
+                        const boost = Math.floor(150 + Math.random() * 350);
+                        const updated = teams.map((t, idx) => idx === randomIdx ? { ...t, score: t.score + boost } : t);
+                        updated.sort((a, b) => b.score - a.score);
+                        const reRanked = updated.map((t, idx) => ({ ...t, rank: idx + 1, rankChange: t.rank - (idx + 1) }));
+                        if (isSoundEnabled) soundFx.playRankUp();
+                        setTeams(reRanked);
+                      }}
+                      className="w-full py-2 px-3 rounded bg-[#f59e0b]/15 hover:bg-[#f59e0b]/25 border border-[#f59e0b]/50 text-xs text-[#f59e0b] font-bold"
+                    >
+                      ⚡ Boost Random Team (+150-500 pts)
+                    </button>
+                  </div>
+                  <div className="p-3 bg-[#111622] rounded-lg border border-[#1f293d] space-y-2">
+                    <span className="text-xs font-bold text-white block">2. High-Stakes Rank Swap</span>
+                    <button
+                      onClick={() => {
+                        const t4 = teams.find(t => t.rank === 4);
+                        const t2 = teams.find(t => t.rank === 2);
+                        if (!t4 || !t2) return;
+                        const updated = teams.map(t => t.id === t4.id ? { ...t, score: t2.score + 200 } : t);
+                        updated.sort((a, b) => b.score - a.score);
+                        const reRanked = updated.map((t, idx) => ({ ...t, rank: idx + 1, rankChange: (teams.find(old => old.id === t.id)?.rank || 0) - (idx + 1) }));
+                        if (isSoundEnabled) soundFx.playRankUp();
+                        setTeams(reRanked);
+                      }}
+                      className="w-full py-2 px-3 rounded bg-[#3b82f6]/15 hover:bg-[#3b82f6]/25 border border-[#3b82f6]/50 text-xs text-[#60a5fa] font-bold"
+                    >
+                      🔀 Simulate Rank 4 Overtaking Rank 2
+                    </button>
+                  </div>
+                  <div className="p-3 bg-[#111622] rounded-lg border border-[#1f293d] space-y-2">
+                    <span className="text-xs font-bold text-white block">3. Connection State</span>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button onClick={() => setConnectionState(connectionState === 'LIVE' ? 'OFFLINE' : 'LIVE')} className="py-2 px-2 rounded border border-[#22c55e]/50 text-xs">
+                        {connectionState === 'LIVE' ? 'Online' : 'Offline'}
+                      </button>
+                      <button onClick={() => setConnectionState('DELAYED')} className="py-2 px-2 rounded border border-[#f59e0b]/50 text-xs">
+                        Simulate Lag
+                      </button>
+                    </div>
+                  </div>
+                  <div className="space-y-2 pt-1">
+                    <button
+                      onClick={() => setTeams(HACKATHON_SHEET_DATASET_TEAMS)}
+                      className="w-full py-2.5 px-3 rounded bg-[#f59e0b]/20 hover:bg-[#f59e0b]/30 border border-[#f59e0b]/60 text-xs text-[#f59e0b] font-bold shadow-[0_0_12px_rgba(245,158,11,0.2)]"
+                    >
+                      📊 Load Hackathon Dataset (15 Teams: 975 - 380 pts)
+                    </button>
+                    <button
+                      onClick={() => setTeams(INITIAL_TEAMS)}
+                      className="w-full py-2 px-3 rounded bg-[#1f2937] hover:bg-[#374151] border border-[#4b5563] text-xs text-[#d1d5db]"
+                    >
+                      ↺ Reset Reference Data
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Config Modal */}
+            {isConfigOpen && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
+                <div className="relative w-full max-w-xl bg-[#0d1017] border border-[#f59e0b]/40 rounded-xl shadow-[0_0_50px_rgba(245,158,11,0.2)] p-6 space-y-5">
+                  <div className="flex items-center justify-between border-b border-[#1f293d] pb-3">
+                    <h2 className="text-base font-bold text-white uppercase">Telemetry Settings</h2>
+                    <button onClick={() => setIsConfigOpen(false)} className="text-[#9ca3af] hover:text-white">✕</button>
+                  </div>
+                  <div className="space-y-4">
+                    {/* Hackathon Evaluation State Toggle */}
+                    <div className="p-4 rounded-lg bg-gradient-to-b from-[#1a1510] to-[#111622] border border-[#f59e0b]/50 space-y-3 shadow-[0_0_25px_rgba(245,158,11,0.15)]">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <span className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                            🏆 Hackathon Competition Stage
+                          </span>
+                          <p className="text-[11px] text-[#9ca3af] mt-0.5">
+                            When evaluation ends, the final rankings are locked and showcased in the 3D stadium podium.
+                          </p>
+                        </div>
+                        <span className={`text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-wider ${isEvaluationConcluded ? 'bg-[#f59e0b] text-black' : 'bg-[#22c55e]/20 text-[#4ade80] border border-[#22c55e]/40'}`}>
+                          {isEvaluationConcluded ? '3D CEREMONY' : 'LIVE 2D'}
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2.5 pt-1">
+                        <button
+                          type="button"
+                          onClick={() => setIsEvaluationConcluded(false)}
+                          className={`py-2.5 px-3 rounded-lg border text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${
+                            !isEvaluationConcluded
+                              ? 'border-[#22c55e] bg-[#22c55e]/20 text-[#4ade80] shadow-[0_0_12px_rgba(34,197,94,0.3)]'
+                              : 'border-[#374151] bg-[#0a0d14] text-[#9ca3af] hover:border-gray-500 hover:text-white'
+                          }`}
+                        >
+                          ● 1. Live Evaluation (2D)
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setIsEvaluationConcluded(true)}
+                          className={`py-2.5 px-3 rounded-lg border text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${
+                            isEvaluationConcluded
+                              ? 'border-[#f59e0b] bg-[#f59e0b]/25 text-[#f59e0b] shadow-[0_0_16px_rgba(245,158,11,0.4)]'
+                              : 'border-[#374151] bg-[#0a0d14] text-[#9ca3af] hover:border-[#f59e0b]/50 hover:text-white'
+                          }`}
+                        >
+                          🏆 2. Concluded (3D Reveal)
+                        </button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-[#d1d5db] uppercase mb-2">Data Engine</label>
+                      <div className="grid grid-cols-3 gap-2">
+                        <button onClick={() => setDataSource('google-sheets')} className={`py-2 px-3 rounded-lg border text-xs font-bold ${dataSource === 'google-sheets' ? 'border-[#f59e0b] bg-[#f59e0b]/20 text-[#f59e0b]' : 'border-[#374151] text-[#9ca3af]'}`}>Google Sheets</button>
+                        <button onClick={() => setDataSource('mock')} className={`py-2 px-3 rounded-lg border text-xs font-bold ${dataSource === 'mock' ? 'border-[#f59e0b] bg-[#f59e0b]/20 text-[#f59e0b]' : 'border-[#374151] text-[#9ca3af]'}`}>Reference Mock</button>
+                        <button onClick={() => setDataSource('simulator')} className={`py-2 px-3 rounded-lg border text-xs font-bold ${dataSource === 'simulator' ? 'border-[#f59e0b] bg-[#f59e0b]/20 text-[#f59e0b]' : 'border-[#374151] text-[#9ca3af]'}`}>Simulator</button>
+                      </div>
+                    </div>
+                    {dataSource === 'google-sheets' && (
+                      <div className="p-4 rounded-lg bg-[#111622] border border-[#1f293d] space-y-3">
+                        <label className="block text-xs text-[#9ca3af]">Google Sheet ID or URL:</label>
+                        <input
+                          type="text"
+                          value={sheetId}
+                          onChange={e => {
+                            const val = e.target.value;
+                            const match = val.match(/\/d\/([a-zA-Z0-9-_]+)/);
+                            setSheetId(match ? match[1] : val);
+                          }}
+                          placeholder="e.g. 1BxiMVs0... or paste Google Sheet URL"
+                          className="w-full bg-[#0a0d14] border border-[#374151] rounded px-3 py-2 text-sm text-white focus:border-[#f59e0b] focus:outline-none"
+                        />
+                      </div>
+                    )}
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-[#111622] border border-[#1f293d]">
+                      <span className="text-xs font-bold text-white">Spline 3D Scene Layer</span>
+                      <button onClick={() => setIsSplineEnabled(!isSplineEnabled)} className={`w-11 h-6 rounded-full relative ${isSplineEnabled ? 'bg-[#f59e0b]' : 'bg-[#374151]'}`}>
+                        <div className={`w-4 h-4 rounded-full bg-white absolute top-1 ${isSplineEnabled ? 'left-6' : 'left-1'}`} />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex justify-end gap-3 pt-3 border-t border-[#1f293d]">
+                    <button onClick={() => setIsConfigOpen(false)} className="px-5 py-2 rounded-lg bg-[#f59e0b] text-black font-black text-xs uppercase">Apply</button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      }
+
+      ReactDOM.createRoot(document.getElementById('root')).render(<MainApp />);
+    </script>
+  </body>
+</html>

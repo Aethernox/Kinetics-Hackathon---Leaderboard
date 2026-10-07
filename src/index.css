@@ -1,0 +1,85 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-orbitron: 'Times New Roman', Times, serif;
+  --font-rajdhani: 'Times New Roman', Times, serif;
+  --font-mono: 'Times New Roman', Times, serif;
+  --font-sans: 'Times New Roman', Times, serif;
+  font-family: 'Times New Roman', Times, serif;
+}
+
+*, *::before, *::after {
+  font-family: 'Times New Roman', Times, serif !important;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #07080b;
+  color: #ffffff;
+  font-family: 'Times New Roman', Times, serif !important;
+  overflow-x: hidden;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #090b10;
+}
+::-webkit-scrollbar-thumb {
+  background: #2a3142;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #f59e0b;
+}
+
+/* Scanlines Texture */
+.bg-scanlines {
+  background: linear-gradient(
+    rgba(18, 16, 16, 0) 50%,
+    rgba(0, 0, 0, 0.25) 50%
+  ), linear-gradient(
+    90deg,
+    rgba(255, 0, 0, 0.02),
+    rgba(0, 255, 0, 0.01),
+    rgba(0, 0, 255, 0.02)
+  );
+  background-size: 100% 3px, 6px 100%;
+}
+
+/* Radial Vignette */
+.bg-radial-vignette {
+  background: radial-gradient(
+    circle at center,
+    transparent 40%,
+    rgba(7, 8, 11, 0.85) 90%,
+    #07080b 100%
+  );
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slideLeft {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.25s ease-out forwards;
+}
+
+.animate-slideLeft {
+  animation: slideLeft 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
