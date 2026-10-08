@@ -81,7 +81,7 @@ export default function Scene3D({ top3, tier, motion, interactive, active, overt
         <Burst fx={fx} liveHeights={liveHeights} enabled={tier === 'high' && motion} />
 
         {tier === 'high' && (
-          <EffectComposer multisampling={4} disableNormalPass>
+          <EffectComposer multisampling={4}>
             <Bloom mipmapBlur intensity={0.9} luminanceThreshold={1} luminanceSmoothing={0.2} />
             <Vignette eskil={false} offset={0.15} darkness={0.75} />
           </EffectComposer>

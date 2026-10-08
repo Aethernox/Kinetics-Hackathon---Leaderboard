@@ -3,18 +3,20 @@ import { Team, ConnectionState, GoogleSheetConfig } from './types/leaderboard';
 import { INITIAL_TEAMS } from './services/mockData';
 import { fetchGoogleSheetData } from './services/googleSheets';
 import { soundFx } from './services/audioEffects';
+import { isSessionAuthenticated, setSessionAuthenticated } from './services/auth';
 import { Header } from './components/layout/Header';
 import { TelemetryHUD } from './components/layout/TelemetryHUD';
+import { Footer } from './components/layout/Footer';
 import { SplineBackground } from './components/spline/SplineBackground';
 import { Hero3D } from './components/hero3d';
 import { Podium } from './components/podium/Podium';
 import { LeaderboardTable } from './components/leaderboard/LeaderboardTable';
 import { ConfigModal } from './components/common/ConfigModal';
 import { SimulatorDrawer } from './components/common/SimulatorDrawer';
+import { AdminAuthModal, ProtectedFeature } from './components/common/AdminAuthModal';
 
 export const App: React.FC = () => {
   const [teams, setTeams] = useState<Team[]>(INITIAL_TEAMS);
-  const [previousTeams, setPreviousTeams] = useState<Team[]>(INITIAL_TEAMS);
   const [connectionState, setConnectionState] = useState<ConnectionState>('LIVE');
   const [lastSyncTimestamp, setLastSyncTimestamp] = useState<number | null>(Date.now());
   const [dataSource, setDataSource] = useState<'google-sheets' | 'mock' | 'simulator'>('mock');
@@ -23,6 +25,11 @@ export const App: React.FC = () => {
   const [isConfigOpen, setIsConfigOpen] = useState(false);
   const [isSimulatorOpen, setIsSimulatorOpen] = useState(false);
   const [isEvaluationConcluded, setIsEvaluationConcluded] = useState(false);
+
+  // Admin Security Clearance & Authentication State
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => isSessionAuthenticated());
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [targetFeature, setTargetFeature] = useState<ProtectedFeature>('general');
 
   const [sheetConfig, setSheetConfig] = useState<GoogleSheetConfig>({
     sheetId: '',
@@ -58,7 +65,6 @@ export const App: React.FC = () => {
           soundFx.playRankDown();
         }
 
-        setPreviousTeams(teamsRef.current);
         setTeams(freshTeams);
         setConnectionState('LIVE');
         setLastSyncTimestamp(Date.now());
@@ -82,16 +88,57 @@ export const App: React.FC = () => {
     if (hasRankChange && isSoundEnabled) {
       soundFx.playRankUp();
     }
-    setPreviousTeams(teams);
     setTeams(newTeams);
     setLastSyncTimestamp(Date.now());
   };
 
   const handleResetToDefault = () => {
     setTeams(INITIAL_TEAMS);
-    setPreviousTeams(INITIAL_TEAMS);
     setConnectionState('LIVE');
     setLastSyncTimestamp(Date.now());
+  };
+
+  // Protected Feature Access Handlers
+  const handleOpenConfig = () => {
+    if (isAuthenticated) {
+      setIsConfigOpen(true);
+    } else {
+      setTargetFeature('config');
+      setIsAuthModalOpen(true);
+    }
+  };
+
+  const handleOpenSimulator = () => {
+    if (isAuthenticated) {
+      setIsSimulatorOpen(true);
+    } else {
+      setTargetFeature('simulator');
+      setIsAuthModalOpen(true);
+    }
+  };
+
+  const handleAuthSuccess = () => {
+    setIsAuthenticated(true);
+    setSessionAuthenticated(true);
+    setIsAuthModalOpen(false);
+
+    if (targetFeature === 'config') {
+      setIsConfigOpen(true);
+    } else if (targetFeature === 'simulator') {
+      setIsSimulatorOpen(true);
+    }
+  };
+
+  const handleLockSession = () => {
+    setIsAuthenticated(false);
+    setSessionAuthenticated(false);
+    setIsConfigOpen(false);
+    setIsSimulatorOpen(false);
+    try {
+      soundFx.playRankDown();
+    } catch {
+      // Audio fallback
+    }
   };
 
   return (
@@ -107,12 +154,14 @@ export const App: React.FC = () => {
           lastSyncTimestamp={lastSyncTimestamp}
           isSoundEnabled={isSoundEnabled}
           onToggleSound={() => setIsSoundEnabled(!isSoundEnabled)}
-          onOpenConfig={() => setIsConfigOpen(true)}
-          onOpenSimulator={() => setIsSimulatorOpen(true)}
+          onOpenConfig={handleOpenConfig}
+          onOpenSimulator={handleOpenSimulator}
           onManualRefresh={performSync}
           dataSource={dataSource}
           isEvaluationConcluded={isEvaluationConcluded}
           onToggleEvaluationConcluded={setIsEvaluationConcluded}
+          isAuthenticated={isAuthenticated}
+          onToggleAuthLock={handleLockSession}
         />
 
         {/* HUD & Hero Section */}
@@ -133,7 +182,7 @@ export const App: React.FC = () => {
                 institution: t.institutionCode || t.institution,
                 score: t.score,
                 rankDelta: t.rankChange,
-                logoUrl: t.logoUrl,
+                logoUrl: t.logoUrl || t.logo || '',
                 metric: t.metricLabel,
               }))}
               quality="auto"
@@ -164,7 +213,7 @@ export const App: React.FC = () => {
         <LeaderboardTable teams={teams} />
 
         {/* Bottom System Bar */}
-        <footer className="w-full py-2.5 px-6 border-t border-[#1c212c]/60 bg-[#07080b]/90 backdrop-blur-md flex flex-col sm:flex-row items-center justify-between text-xs text-[#6b7280]">
+        <div className="w-full py-2.5 px-6 border-t border-[#1c212c]/60 bg-[#07080b]/90 backdrop-blur-md flex flex-col sm:flex-row items-center justify-between text-xs text-[#6b7280]">
           <div className="flex items-center gap-3">
             <span className="text-[#f59e0b]/80">● KINETICS 2026 AUTONOMOUS ROBOTICS DASHBOARD</span>
             <span className="hidden md:inline">•</span>
@@ -175,7 +224,10 @@ export const App: React.FC = () => {
             <span>POLL: {sheetConfig.pollIntervalMs}ms</span>
             <span>MODE: {isEvaluationConcluded ? '3D CEREMONY' : 'LIVE DASHBOARD'}</span>
           </div>
-        </footer>
+        </div>
+
+        {/* Official Kinetic Robotics Club Institutional Footer */}
+        <Footer />
       </div>
 
       {/* Config Modal */}
@@ -195,6 +247,7 @@ export const App: React.FC = () => {
         onToggleSound={setIsSoundEnabled}
         isEvaluationConcluded={isEvaluationConcluded}
         onToggleEvaluationConcluded={setIsEvaluationConcluded}
+        onLockSession={handleLockSession}
       />
 
       {/* Simulator Drawer */}
@@ -208,6 +261,15 @@ export const App: React.FC = () => {
         onSetConnectionState={setConnectionState}
         isEvaluationConcluded={isEvaluationConcluded}
         onToggleEvaluationConcluded={setIsEvaluationConcluded}
+        onLockSession={handleLockSession}
+      />
+
+      {/* Admin Authentication Gate Modal */}
+      <AdminAuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onSuccess={handleAuthSuccess}
+        targetFeature={targetFeature}
       />
     </div>
   );

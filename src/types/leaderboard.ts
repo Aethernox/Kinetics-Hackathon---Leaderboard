@@ -18,6 +18,7 @@ export interface Team {
   institution: string;
   institutionCode?: string;
   logo?: string;
+  logoUrl?: string;
   score: number;
   previousScore?: number;
   metricLabel?: string;

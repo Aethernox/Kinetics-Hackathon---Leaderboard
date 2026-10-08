@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Play, Shuffle, Zap, WifiOff, Wifi, RotateCcw, Trophy, Database } from 'lucide-react';
+import { X, Play, Shuffle, Zap, WifiOff, Wifi, RotateCcw, Trophy, Database, Lock } from 'lucide-react';
 import { Team, ConnectionState } from '../../types/leaderboard';
 import { HACKATHON_SHEET_DATASET_TEAMS } from '../../services/mockData';
 
@@ -13,6 +13,7 @@ interface SimulatorDrawerProps {
   onSetConnectionState: (state: ConnectionState) => void;
   isEvaluationConcluded?: boolean;
   onToggleEvaluationConcluded?: (concluded: boolean) => void;
+  onLockSession?: () => void;
 }
 
 export const SimulatorDrawer: React.FC<SimulatorDrawerProps> = ({
@@ -25,6 +26,7 @@ export const SimulatorDrawer: React.FC<SimulatorDrawerProps> = ({
   onSetConnectionState,
   isEvaluationConcluded = false,
   onToggleEvaluationConcluded,
+  onLockSession,
 }) => {
   if (!isOpen) return null;
 
@@ -100,12 +102,25 @@ export const SimulatorDrawer: React.FC<SimulatorDrawerProps> = ({
             Live Event Simulator
           </h3>
         </div>
-        <button
-          onClick={onClose}
-          className="p-1 text-[#9ca3af] hover:text-white hover:bg-white/10 rounded-lg"
-        >
-          <X className="w-4 h-4" />
-        </button>
+        <div className="flex items-center gap-2">
+          {onLockSession && (
+            <button
+              type="button"
+              onClick={onLockSession}
+              title="Lock Admin Session"
+              className="px-2.5 py-1 text-xs text-[#9ca3af] hover:text-[#f59e0b] hover:bg-[#1f2937] border border-[#374151] rounded-lg transition-colors flex items-center gap-1.5 font-bold uppercase tracking-wider"
+            >
+              <Lock className="w-3.5 h-3.5 text-[#f59e0b]" />
+              <span className="hidden sm:inline">Lock</span>
+            </button>
+          )}
+          <button
+            onClick={onClose}
+            className="p-1 text-[#9ca3af] hover:text-white hover:bg-white/10 rounded-lg"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       {/* Drawer Body */}

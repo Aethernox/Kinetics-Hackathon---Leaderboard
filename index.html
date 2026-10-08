@@ -2,7 +2,7 @@
 <html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="Kinetics Logo.png" />
+    <link rel="icon" type="image/png" href="logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     
     <!-- SEO & Metadata -->
@@ -655,7 +655,7 @@
       }
 
       // Top Header with Kinetic Logo.png image
-      function Header({ connectionState, currentDate, onOpenConfig, onOpenSimulator, isSoundEnabled, onToggleSound, onManualRefresh, isEvaluationConcluded, onToggleEvaluationConcluded }) {
+      function Header({ connectionState, currentDate, onOpenConfig, onOpenSimulator, isSoundEnabled, onToggleSound, onManualRefresh, isEvaluationConcluded, onToggleEvaluationConcluded, isAuthenticated, onToggleAuthLock }) {
         const getStatus = () => {
           switch (connectionState) {
             case 'LIVE':
@@ -672,13 +672,13 @@
 
         return (
           <header className="relative w-full z-20 border-b border-[#262c3a]/60 bg-[#07080b]/85 backdrop-blur-md px-4 sm:px-8 py-3 flex items-center justify-between">
-            {/* Left: Branding with Kinetic Logo.png */}
+            {/* Left: Branding with logo.png */}
             <div className="flex items-center gap-3">
               <img
-                src="Kinetics Logo.png"
+                src="logo.png"
                 alt="Kinetic Logo"
                 className="h-10 sm:h-12 w-auto object-contain flex-shrink-0"
-                onError={e => { e.target.src = './Kinetics Logo.png'; }}
+                onError={e => { e.target.src = './logo.png'; }}
               />
               <div className="flex items-center gap-2.5">
                 <span className="text-xl sm:text-2xl md:text-3xl font-black tracking-[0.12em] text-white drop-shadow-md">
@@ -736,12 +736,31 @@
                     <svg className="w-3.5 h-3.5 text-[#6b7280]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
                   )}
                 </button>
-                <button onClick={onOpenSimulator} title="Simulator Controls" className="p-1.5 text-[#9ca3af] hover:text-[#f59e0b] hover:bg-[#1f2937] rounded">
+                <button
+                  onClick={onOpenSimulator}
+                  title={isAuthenticated ? "Open Live Simulator Controls (Admin Unlocked)" : "Open Live Simulator (Admin ID & Password Required)"}
+                  className={`p-1.5 rounded relative transition-colors ${
+                    isAuthenticated ? 'text-[#f59e0b] hover:bg-[#f59e0b]/20 hover:text-white' : 'text-[#9ca3af] hover:text-[#f59e0b] hover:bg-[#1f2937]'
+                  }`}
+                >
                   <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+                  {!isAuthenticated && <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-[#f59e0b]/70" />}
                 </button>
-                <button onClick={onOpenConfig} title="Settings" className="p-1.5 text-[#9ca3af] hover:text-[#f59e0b] hover:bg-[#1f2937] rounded">
+                <button
+                  onClick={onOpenConfig}
+                  title={isAuthenticated ? "Dashboard & Telemetry Settings (Admin Unlocked)" : "Dashboard & Telemetry Settings (Admin ID & Password Required)"}
+                  className={`p-1.5 rounded relative transition-colors ${
+                    isAuthenticated ? 'text-[#f59e0b] hover:bg-[#f59e0b]/20 hover:text-white' : 'text-[#9ca3af] hover:text-[#f59e0b] hover:bg-[#1f2937]'
+                  }`}
+                >
                   <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                  {!isAuthenticated && <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-[#f59e0b]/70" />}
                 </button>
+                {isAuthenticated && onToggleAuthLock && (
+                  <button onClick={onToggleAuthLock} title="Admin Session Active (Click to Lock Session)" className="p-1.5 text-[#22c55e] hover:text-[#ef4444] hover:bg-[#1f2937] rounded">
+                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>
+                  </button>
+                )}
               </div>
             </div>
           </header>
@@ -1523,126 +1542,95 @@
         );
       }
 
-      // Metric Visual SVG component
-      function MetricVisual({ type, label }) {
-        const renderGlyph = () => {
-          switch (type) {
-            case 'lidar':
-              return (
-                <svg viewBox="0 0 40 24" className="w-7 h-5 flex-shrink-0">
-                  <path d="M 4,4 L 36,4 L 20,12 L 36,20 L 4,20 L 20,12 Z" fill="none" stroke="#f59e0b" strokeWidth="1.5" />
-                  <line x1="8" y1="7" x2="32" y2="7" stroke="#f59e0b" strokeWidth="0.8" strokeDasharray="2 1" />
-                  <line x1="12" y1="10" x2="28" y2="10" stroke="#f59e0b" strokeWidth="0.8" strokeDasharray="2 1" />
-                  <line x1="12" y1="14" x2="28" y2="14" stroke="#f59e0b" strokeWidth="0.8" strokeDasharray="2 1" />
-                  <line x1="8" y1="17" x2="32" y2="17" stroke="#f59e0b" strokeWidth="0.8" strokeDasharray="2 1" />
-                </svg>
-              );
-            case 'pointcloud':
-              return (
-                <svg viewBox="0 0 36 24" className="w-7 h-5 flex-shrink-0">
-                  <circle cx="6" cy="18" r="1.5" fill="#f59e0b" />
-                  <circle cx="12" cy="16" r="1.5" fill="#f59e0b" />
-                  <circle cx="18" cy="12" r="1.5" fill="#f59e0b" />
-                  <circle cx="24" cy="8" r="1.5" fill="#f59e0b" />
-                  <circle cx="30" cy="5" r="1.5" fill="#fbbf24" />
-                </svg>
-              );
-            case 'neural':
-              return (
-                <svg viewBox="0 0 36 24" className="w-7 h-5 flex-shrink-0">
-                  <line x1="6" y1="6" x2="18" y2="12" stroke="#f59e0b" strokeWidth="1" opacity="0.7" />
-                  <line x1="6" y1="18" x2="18" y2="12" stroke="#f59e0b" strokeWidth="1" opacity="0.7" />
-                  <line x1="18" y1="12" x2="30" y2="6" stroke="#f59e0b" strokeWidth="1" opacity="0.7" />
-                  <line x1="18" y1="12" x2="30" y2="18" stroke="#f59e0b" strokeWidth="1" opacity="0.7" />
-                  <circle cx="6" cy="6" r="2" fill="#f59e0b" />
-                  <circle cx="6" cy="18" r="2" fill="#f59e0b" />
-                  <circle cx="18" cy="12" r="2.5" fill="#fbbf24" />
-                  <circle cx="30" cy="6" r="2.5" fill="#f59e0b" />
-                  <circle cx="30" cy="18" r="2.5" fill="#f59e0b" />
-                </svg>
-              );
-            case 'trajectory':
-              return (
-                <svg viewBox="0 0 36 24" className="w-7 h-5 flex-shrink-0">
-                  <path d="M 4,18 C 12,20 16,4 32,8" fill="none" stroke="#f59e0b" strokeWidth="1.5" />
-                  <circle cx="4" cy="18" r="2" fill="#fbbf24" />
-                  <circle cx="32" cy="8" r="2.5" fill="#fbbf24" />
-                </svg>
-              );
-            case 'grid':
-              return (
-                <svg viewBox="0 0 36 24" className="w-7 h-5 flex-shrink-0">
-                  <rect x="6" y="2" width="24" height="20" fill="none" stroke="#f59e0b" strokeWidth="1" opacity="0.8" />
-                  <line x1="14" y1="2" x2="14" y2="22" stroke="#f59e0b" strokeWidth="0.8" opacity="0.6" />
-                  <line x1="22" y1="2" x2="22" y2="22" stroke="#f59e0b" strokeWidth="0.8" opacity="0.6" />
-                  <line x1="6" y1="8.5" x2="30" y2="8.5" stroke="#f59e0b" strokeWidth="0.8" opacity="0.6" />
-                  <line x1="6" y1="15.5" x2="30" y2="15.5" stroke="#f59e0b" strokeWidth="0.8" opacity="0.6" />
-                </svg>
-              );
-            case 'optimization':
-              return (
-                <svg viewBox="0 0 36 24" className="w-7 h-5 flex-shrink-0">
-                  <path d="M 6,19 A 12,12 0 0,1 24,9" fill="none" stroke="#f59e0b" strokeWidth="2" />
-                  <line x1="18" y1="19" x2="24" y2="11" stroke="#fbbf24" strokeWidth="2" />
-                  <circle cx="18" cy="19" r="2" fill="#fbbf24" />
-                </svg>
-              );
-            case 'slam':
-            default:
-              return (
-                <svg viewBox="0 0 36 24" className="w-7 h-5 flex-shrink-0">
-                  <polygon points="18,4 30,19 6,19" fill="none" stroke="#f59e0b" strokeWidth="1.2" />
-                  <circle cx="18" cy="4" r="2" fill="#fbbf24" />
-                  <circle cx="30" cy="19" r="2" fill="#fbbf24" />
-                  <circle cx="6" cy="19" r="2" fill="#fbbf24" />
-                </svg>
-              );
-          }
+      // Text Proper Case formatting helper
+      function toProperCase(str) {
+        if (!str) return '';
+        const acronyms = {
+          ai: 'AI', ml: 'ML', nit: 'NIT', nitd: 'NITD', iit: 'IIT', iiit: 'IIIT',
+          mit: 'MIT', cmu: 'CMU', tum: 'TUM', cit: 'CIT', bits: 'BITS', vit: 'VIT',
+          slam: 'SLAM', lidar: 'LiDAR', ros: 'ROS', cv: 'CV', gps: 'GPS', imu: 'IMU',
+          rgb: 'RGB', '2d': '2D', '3d': '3D', '4d': '4D', pid: 'PID', uav: 'UAV',
+          ugv: 'UGV', gpu: 'GPU', cpu: 'CPU', rnd: 'RND', pts: 'pts'
         };
 
+        return String(str)
+          .split(' ')
+          .map(word => {
+            if (!word) return '';
+            const match = word.match(/^([^a-zA-Z0-9]*)([a-zA-Z0-9'-]+)([^a-zA-Z0-9]*)$/);
+            if (!match) return word;
+            const prefix = match[1];
+            const core = match[2];
+            const suffix = match[3];
+
+            const lower = core.toLowerCase();
+            if (acronyms[lower]) {
+              return prefix + acronyms[lower] + suffix;
+            }
+            if (core !== core.toUpperCase() && /[A-Z]/.test(core.slice(1))) {
+              return prefix + core + suffix;
+            }
+            const capitalized = core.charAt(0).toUpperCase() + core.slice(1).toLowerCase();
+            return prefix + capitalized + suffix;
+          })
+          .join(' ');
+      }
+
+      // Metric Visual component without SVG icons in Proper Case & Times New Roman
+      function MetricVisual({ type, label }) {
+        const formattedLabel = label ? toProperCase(label) : 'Telemetry Data Feed';
         return (
-          <div className="flex items-center gap-2.5 overflow-hidden">
-            {renderGlyph()}
+          <div className="flex items-center overflow-hidden font-['Times_New_Roman',Times,serif]">
             <span className="text-xs sm:text-sm text-[#d1d5db] tracking-wide truncate">
-              {label || 'Telemetry Data Feed'}
+              {formattedLabel}
             </span>
           </div>
         );
       }
 
-      // Leaderboard Row
+      // Leaderboard Row in Proper Case & Times New Roman
       function LeaderboardRow({ team, isEven }) {
         const code = (team.institutionCode || team.institution).toUpperCase();
 
         const renderLogo = () => {
           if (code.includes('MIT')) {
-            return <div className="w-8 h-8 rounded bg-[#800000]/30 border border-[#ef4444]/60 flex items-center justify-center text-[10px] font-black text-[#ef4444]">MIT</div>;
+            return <div className="w-8 h-8 rounded bg-[#800000]/30 border border-[#ef4444]/60 flex items-center justify-center text-[10px] font-black text-[#ef4444] font-['Times_New_Roman',Times,serif]">MIT</div>;
           }
           if (code.includes('STANFORD')) {
-            return <div className="w-8 h-8 rounded-full bg-[#8c1515]/30 border border-[#f87171]/60 flex items-center justify-center text-xs font-black text-[#f87171]">S</div>;
+            return <div className="w-8 h-8 rounded-full bg-[#8c1515]/30 border border-[#f87171]/60 flex items-center justify-center text-xs font-black text-[#f87171] font-['Times_New_Roman',Times,serif]">S</div>;
           }
           if (code.includes('IIT') || code.includes('DELHI')) {
-            return <div className="w-8 h-8 rounded-full bg-[#1e3a8a]/40 border border-[#60a5fa]/60 flex items-center justify-center text-[9px] font-black text-[#93c5fd]">IIT</div>;
+            return <div className="w-8 h-8 rounded-full bg-[#1e3a8a]/40 border border-[#60a5fa]/60 flex items-center justify-center text-[9px] font-black text-[#93c5fd] font-['Times_New_Roman',Times,serif]">IIT</div>;
           }
           if (code.includes('CMU')) {
-            return <div className="w-8 h-8 rounded bg-[#990000]/40 border border-[#fca5a5]/60 flex items-center justify-center text-[9px] font-black text-[#fca5a5]">CMU</div>;
+            return <div className="w-8 h-8 rounded bg-[#990000]/40 border border-[#fca5a5]/60 flex items-center justify-center text-[9px] font-black text-[#fca5a5] font-['Times_New_Roman',Times,serif]">CMU</div>;
           }
           if (code.includes('OXFORD')) {
-            return <div className="w-8 h-8 rounded-full bg-[#002147]/60 border border-[#93c5fd]/50 flex items-center justify-center text-[9px] font-bold text-[#bfdbfe]">OXF</div>;
+            return <div className="w-8 h-8 rounded-full bg-[#002147]/60 border border-[#93c5fd]/50 flex items-center justify-center text-[9px] font-bold text-[#bfdbfe] font-['Times_New_Roman',Times,serif]">OXF</div>;
           }
           if (code.includes('TUM')) {
-            return <div className="w-8 h-8 rounded bg-[#0065BD]/40 border border-[#60a5fa]/60 flex items-center justify-center text-[9px] font-black text-[#60a5fa]">TUM</div>;
+            return <div className="w-8 h-8 rounded bg-[#0065BD]/40 border border-[#60a5fa]/60 flex items-center justify-center text-[9px] font-black text-[#60a5fa] font-['Times_New_Roman',Times,serif]">TUM</div>;
           }
           if (code.includes('CALTECH')) {
-            return <div className="w-8 h-8 rounded-full bg-[#FF6C0C]/20 border border-[#fb923c]/70 flex items-center justify-center text-[10px] font-bold text-[#fb923c]">CIT</div>;
+            return <div className="w-8 h-8 rounded-full bg-[#FF6C0C]/20 border border-[#fb923c]/70 flex items-center justify-center text-[10px] font-bold text-[#fb923c] font-['Times_New_Roman',Times,serif]">CIT</div>;
           }
-          return <div className="w-8 h-8 rounded-full bg-[#1f2937] border border-[#f59e0b]/40 flex items-center justify-center text-[10px] font-bold text-[#f59e0b]">{code.slice(0, 3)}</div>;
+          return <div className="w-8 h-8 rounded-full bg-[#1f2937] border border-[#f59e0b]/40 flex items-center justify-center text-[10px] font-bold text-[#f59e0b] font-['Times_New_Roman',Times,serif]">{code.slice(0, 3)}</div>;
         };
 
-        const statusClass = team.status === 'CALCULATING...' ? 'text-[#f59e0b] animate-pulse' : team.status === 'COOLDOWN' ? 'text-[#9ca3af] opacity-60' : 'text-[#f59e0b] font-semibold';
+        const statusClass = team.status === 'CALCULATING...' || team.status === 'Calculating...'
+          ? 'text-[#f59e0b] animate-pulse' 
+          : team.status === 'COOLDOWN' || team.status === 'Cooldown'
+          ? 'text-[#9ca3af] opacity-60' 
+          : team.status === 'OFFLINE' || team.status === 'Offline'
+          ? 'text-[#ef4444]'
+          : 'text-[#f59e0b] font-semibold';
+
+        const formattedTeamName = toProperCase(team.teamName);
+        const formattedInstitution = toProperCase(team.institution);
+        const formattedStatus = toProperCase(team.status);
 
         return (
-          <div className={`group relative grid grid-cols-12 items-center px-4 sm:px-6 py-3.5 border-b border-[#1c212c]/80 transition-all duration-300 ${isEven ? 'bg-[#0a0c10]/70' : 'bg-[#0d1017]/70'} hover:bg-[#151922] hover:border-[#f59e0b]/30`}>
+          <div className={`group relative grid grid-cols-12 items-center px-4 sm:px-6 py-3.5 border-b border-[#1c212c]/80 transition-all duration-300 font-['Times_New_Roman',Times,serif] ${isEven ? 'bg-[#0a0c10]/70' : 'bg-[#0d1017]/70'} hover:bg-[#151922] hover:border-[#f59e0b]/30`}>
             {/* Rank */}
             <div className="col-span-2 sm:col-span-1 flex items-center">
               <span className="text-lg sm:text-xl font-black text-white group-hover:text-[#f59e0b] transition-colors">
@@ -1650,15 +1638,15 @@
               </span>
             </div>
 
-            {/* Team / Inst */}
+            {/* Team / Inst in Proper Case */}
             <div className="col-span-6 sm:col-span-4 flex items-center gap-3 pr-2">
               <div className="flex-shrink-0">{renderLogo()}</div>
               <div className="flex flex-col min-w-0">
-                <span className="text-sm sm:text-base font-bold text-white uppercase tracking-wider truncate">
-                  {team.teamName}
+                <span className="text-sm sm:text-base font-bold text-white tracking-wide truncate group-hover:text-[#f59e0b] transition-colors">
+                  {formattedTeamName}
                 </span>
                 <span className="text-xs font-medium text-[#9ca3af] tracking-wide truncate">
-                  {team.institution}
+                  {formattedInstitution}
                 </span>
               </div>
             </div>
@@ -1668,7 +1656,7 @@
               <ScoreCounter score={team.score} className="text-base sm:text-lg text-white justify-end sm:justify-start" />
             </div>
 
-            {/* Metrics */}
+            {/* Metrics in Proper Case, no icons */}
             <div className="hidden sm:flex sm:col-span-3 items-center pr-3">
               <MetricVisual type={team.metricType} label={team.metricLabel} />
             </div>
@@ -1676,45 +1664,394 @@
             {/* Change */}
             <div className="hidden sm:flex sm:col-span-1 items-center justify-center text-sm font-bold">
               {team.rankChange > 0 ? (
-                <span className="text-[#f59e0b]">+{team.rankChange}</span>
+                <span className="text-[#f59e0b] flex items-center gap-0.5">+{team.rankChange}</span>
               ) : team.rankChange < 0 ? (
-                <span className="text-[#ef4444]">{team.rankChange}</span>
+                <span className="text-[#ef4444] flex items-center gap-0.5">{team.rankChange}</span>
               ) : (
                 <span className="text-[#9ca3af] opacity-60">0</span>
               )}
             </div>
 
-            {/* Status */}
+            {/* Status in Proper Case */}
             <div className="hidden sm:flex sm:col-span-1 items-center justify-end">
-              <span className={`text-xs font-bold tracking-wider uppercase ${statusClass}`}>
-                {team.status}
+              <span className={`text-xs font-bold tracking-wider ${statusClass}`}>
+                {formattedStatus}
               </span>
             </div>
           </div>
         );
       }
 
-      // Leaderboard Table
+      // Leaderboard Table in Proper Case & Times New Roman
       function LeaderboardTable({ teams }) {
         const tableTeams = teams.filter(t => t.rank > 3);
 
         return (
-          <div className="w-full max-w-6xl mx-auto px-4 pb-12 select-none relative z-10">
+          <div className="w-full max-w-6xl mx-auto px-4 pb-12 select-none relative z-10 font-['Times_New_Roman',Times,serif]">
             <div className="w-full rounded-xl border border-[#2d2218]/90 bg-[#090b10]/85 backdrop-blur-md shadow-[0_12px_40px_rgba(0,0,0,0.7)] overflow-hidden">
-              <div className="grid grid-cols-12 items-center px-4 sm:px-6 py-3.5 border-b border-[#2d2218] bg-gradient-to-r from-[#171310] via-[#120f0d] to-[#171310] text-xs sm:text-sm font-bold tracking-[0.15em] text-[#9ca3af] uppercase">
-                <div className="col-span-2 sm:col-span-1 text-left text-[#d1d5db]">RANK</div>
-                <div className="col-span-6 sm:col-span-4 text-left text-[#d1d5db]">TEAM / INSTITUTION</div>
-                <div className="col-span-4 sm:col-span-2 text-right sm:text-left text-[#d1d5db]">ROUND SCORE</div>
-                <div className="hidden sm:block sm:col-span-3 text-left text-[#d1d5db]">METRICS / GAIN</div>
-                <div className="hidden sm:block sm:col-span-1 text-center text-[#d1d5db]">RANK CHANGE</div>
-                <div className="hidden sm:block sm:col-span-1 text-right text-[#d1d5db]">STATUS</div>
+              <div className="grid grid-cols-12 items-center px-4 sm:px-6 py-3.5 border-b border-[#2d2218] bg-gradient-to-r from-[#171310] via-[#120f0d] to-[#171310] text-xs sm:text-sm font-bold tracking-[0.05em] text-[#d1d5db]">
+                <div className="col-span-2 sm:col-span-1 text-left">Rank</div>
+                <div className="col-span-6 sm:col-span-4 text-left">Team / Institution</div>
+                <div className="col-span-4 sm:col-span-2 text-right sm:text-left">Round Score</div>
+                <div className="hidden sm:block sm:col-span-3 text-left">Metrics / Gain</div>
+                <div className="hidden sm:block sm:col-span-1 text-center">Rank Change</div>
+                <div className="hidden sm:block sm:col-span-1 text-right">Status</div>
               </div>
 
               <div className="divide-y divide-[#181c26]/60">
-                {tableTeams.map((team, idx) => (
-                  <LeaderboardRow key={team.id || team.rank} team={team} isEven={idx % 2 === 1} />
-                ))}
+                {tableTeams.length > 0 ? (
+                  tableTeams.map((team, idx) => (
+                    <LeaderboardRow key={team.id || team.rank} team={team} isEven={idx % 2 === 1} />
+                  ))
+                ) : (
+                  <div className="py-12 text-center text-base text-[#9ca3af]">
+                    No additional teams in data feed
+                  </div>
+                )}
               </div>
+            </div>
+          </div>
+        );
+      }
+
+      // Official Kinetic Robotics Club Social Footer Component
+      function ClubFooter() {
+        const currentYear = new Date().getFullYear();
+        const socialLinks = [
+          {
+            id: 'github',
+            label: 'GitHub',
+            url: 'https://github.com/kinetic-robotics',
+            ariaLabel: 'Follow Kinetic Robotics Club on GitHub',
+            icon: (
+              <svg className="w-5 h-5 sm:w-5.5 sm:h-5.5 fill-current transition-transform duration-300 group-hover:scale-110" viewBox="0 0 24 24">
+                <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+              </svg>
+            )
+          },
+          {
+            id: 'linkedin',
+            label: 'LinkedIn',
+            url: 'https://linkedin.com/company/kinetic-robotics-club',
+            ariaLabel: 'Connect with Kinetic Robotics Club on LinkedIn',
+            icon: (
+              <svg className="w-5 h-5 sm:w-5.5 sm:h-5.5 fill-current transition-transform duration-300 group-hover:scale-110" viewBox="0 0 24 24">
+                <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 8.76a1.69 1.69 0 1 0 0-3.38 1.69 1.69 0 0 0 0 3.38m1.4 9.74V9.95H5.06v8.55z"/>
+              </svg>
+            )
+          },
+          {
+            id: 'x',
+            label: 'X',
+            url: 'https://x.com/kinetic_nitd',
+            ariaLabel: 'Follow Kinetic Robotics Club on X',
+            icon: (
+              <svg className="w-4.5 h-4.5 sm:w-5 sm:h-5 fill-current transition-transform duration-300 group-hover:scale-110" viewBox="0 0 24 24">
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+              </svg>
+            )
+          },
+          {
+            id: 'instagram',
+            label: 'Instagram',
+            url: 'https://instagram.com/kinetic_nitdelhi',
+            ariaLabel: 'Follow Kinetic Robotics Club on Instagram',
+            icon: (
+              <svg className="w-5 h-5 sm:w-5.5 sm:h-5.5 fill-none stroke-current stroke-[2] transition-transform duration-300 group-hover:scale-110" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
+                <rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+              </svg>
+            )
+          },
+          {
+            id: 'website',
+            label: 'Website',
+            url: 'https://kinetic.nitdelhi.ac.in',
+            ariaLabel: 'Visit Kinetic Robotics Club Official Website',
+            icon: (
+              <svg className="w-5 h-5 sm:w-5.5 sm:h-5.5 fill-none stroke-current stroke-[2] transition-transform duration-300 group-hover:scale-110" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="2" y1="12" x2="22" y2="12" />
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+              </svg>
+            )
+          }
+        ];
+
+        return (
+          <footer role="contentinfo" aria-label="KINETICS 2026 Official Social and Connect Section" className="w-full relative z-20 overflow-hidden bg-[#07080b] border-t border-[#1c212c]/80 select-none font-['Times_New_Roman',Times,serif]">
+            {/* Ambient Lighting */}
+            <div className="absolute inset-0 pointer-events-none">
+              <div className="absolute -left-20 top-1/2 -translate-y-1/2 w-80 h-80 rounded-full bg-[#f59e0b]/[0.04] blur-3xl" />
+              <div className="absolute -right-20 top-1/2 -translate-y-1/2 w-96 h-96 rounded-full bg-[#f59e0b]/[0.06] blur-3xl" />
+              <div className="absolute inset-0 bg-scanlines opacity-10" />
+            </div>
+
+            <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-8 py-8 sm:py-10">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-8 md:gap-4 relative">
+                
+                {/* Brand & Tagline */}
+                <div className="flex flex-col items-center lg:items-start text-center lg:text-left space-y-2.5 flex-shrink-0 z-10">
+                  <img
+                    src="logo.png"
+                    alt="KINETIC Robotics Club Logo"
+                    className="h-16 sm:h-18 md:h-20 w-auto object-contain transition-transform duration-300 hover:scale-105 drop-shadow-[0_0_20px_rgba(245,158,11,0.25)]"
+                    onError={e => { e.target.src = './logo.png'; }}
+                    loading="lazy"
+                  />
+                  <p className="text-xs sm:text-sm font-bold tracking-[0.32em] uppercase text-[#e2e8f0]">
+                    INNOVATION IN MOTION
+                  </p>
+                </div>
+
+                {/* Central HUD Divider */}
+                <div className="relative hidden lg:flex flex-col items-center justify-center h-28 mx-6 lg:mx-8">
+                  <div className="w-[1.5px] flex-1 bg-gradient-to-b from-transparent via-[#f59e0b]/40 to-[#f59e0b]/80" />
+                  <div className="relative my-2">
+                    <div className="w-2.5 h-2.5 rotate-45 bg-[#f59e0b] shadow-[0_0_12px_#f59e0b] animate-pulse" />
+                    <div className="absolute inset-0 rotate-45 border border-[#fbbf24] scale-150 opacity-60" />
+                  </div>
+                  <div className="w-[1.5px] flex-1 bg-gradient-to-t from-transparent via-[#f59e0b]/40 to-[#f59e0b]/80" />
+                </div>
+
+                {/* Mobile Horizontal Divider */}
+                <div className="relative w-full flex lg:hidden items-center justify-center my-2">
+                  <div className="flex-1 h-[1px] bg-gradient-to-r from-transparent via-[#f59e0b]/40 to-[#f59e0b]/80" />
+                  <div className="relative mx-3">
+                    <div className="w-2.5 h-2.5 rotate-45 bg-[#f59e0b] shadow-[0_0_10px_#f59e0b] animate-pulse" />
+                  </div>
+                  <div className="flex-1 h-[1px] bg-gradient-to-l from-transparent via-[#f59e0b]/40 to-[#f59e0b]/80" />
+                </div>
+
+                {/* Right: Connect With Us + 5 Social Buttons */}
+                <div className="flex-1 flex flex-col items-center lg:items-start space-y-4 z-10">
+                  <div className="flex items-center gap-3">
+                    <h2 className="text-xs sm:text-sm font-black tracking-[0.25em] uppercase text-[#f3f4f6]">
+                      CONNECT WITH US
+                    </h2>
+                    <div className="h-[2px] w-10 sm:w-14 bg-gradient-to-r from-[#f59e0b] via-[#fbbf24] to-transparent rounded-full shadow-[0_0_10px_#f59e0b]" />
+                  </div>
+
+                  <div className="flex items-center justify-center flex-wrap gap-4 sm:gap-6 xl:gap-8" role="list">
+                    {socialLinks.map(s => (
+                      <div key={s.id} role="listitem">
+                        <a
+                          href={s.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          aria-label={s.ariaLabel}
+                          className="group flex flex-col items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f59e0b] rounded-xl p-1 transition-all duration-200"
+                        >
+                          <div className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center bg-[#0d1017]/90 border border-[#f59e0b]/40 text-[#e5e7eb] group-hover:text-[#f59e0b] group-hover:border-[#f59e0b] group-hover:bg-[#161b26] group-hover:shadow-[0_0_20px_rgba(245,158,11,0.5)] group-hover:-translate-y-1 active:scale-95 transition-all duration-300">
+                            <div className="absolute inset-0 rounded-full bg-gradient-to-b from-[#f59e0b]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                            <div className="relative z-10">{s.icon}</div>
+                          </div>
+                          <span className="text-[11px] sm:text-xs font-medium tracking-wider text-[#9ca3af] group-hover:text-[#f59e0b] transition-colors duration-200">
+                            {s.label}
+                          </span>
+                        </a>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Column 3: High-Resolution 3D Cinematic Robotic Arm Render (Right) */}
+                <div className="hidden lg:flex items-center justify-end flex-shrink-0 w-64 xl:w-80 h-48 max-h-[220px] xl:max-h-[250px] overflow-hidden z-0 pointer-events-none">
+                  <img
+                    src="robotic_arm.png"
+                    alt="KINETIC 3D Autonomous Robotic Arm"
+                    className="w-full h-full max-h-[220px] lg:max-h-[240px] object-cover object-right mix-blend-screen opacity-95 transition-opacity duration-500"
+                    style={{
+                      WebkitMaskImage: 'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.4) 12%, rgba(0,0,0,1) 35%, rgba(0,0,0,1) 100%)',
+                      maskImage: 'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.4) 12%, rgba(0,0,0,1) 35%, rgba(0,0,0,1) 100%)',
+                    }}
+                    onError={e => {
+                      if (!e.target.src.endsWith('./robotic_arm.png') && !e.target.src.endsWith('/robotic_arm.png')) {
+                        e.target.src = './robotic_arm.png';
+                      }
+                    }}
+                    loading="lazy"
+                  />
+                </div>
+              </div>
+
+              {/* Bottom Edge */}
+              <div className="relative mt-8 pt-4">
+                <div className="relative w-full h-[2px] bg-gradient-to-r from-transparent via-[#f59e0b]/60 to-transparent shadow-[0_0_10px_rgba(245,158,11,0.3)]">
+                  <div className="absolute left-0 -top-1.5 w-28 h-2 border-t-2 border-r-2 border-[#f59e0b]/50 shadow-[0_0_8px_rgba(245,158,11,0.3)]" />
+                  <div className="absolute right-0 -top-1.5 w-36 h-2 border-t-2 border-l-2 border-[#f59e0b]/50 shadow-[0_0_8px_rgba(245,158,11,0.3)]" />
+                </div>
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-2 pt-3 text-[10px] sm:text-xs text-[#9ca3af] tracking-wider uppercase font-medium">
+                  <div className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#f59e0b] shadow-[0_0_6px_#f59e0b] animate-pulse" />
+                    <span>KINETICS 2026 • AUTONOMOUS ROBOTICS</span>
+                  </div>
+                  <span>&copy; {currentYear} KINETIC Robotics Club. All rights reserved.</span>
+                </div>
+              </div>
+            </div>
+          </footer>
+        );
+      }
+
+      // Admin Authentication Modal Component for index.html
+      function AdminAuthModal({ isOpen, onClose, onSuccess, targetFeature }) {
+        const [adminId, setAdminId] = useState('');
+        const [password, setPassword] = useState('');
+        const [showPassword, setShowPassword] = useState(false);
+        const [errorMessage, setErrorMessage] = useState('');
+        const [isSubmitting, setIsSubmitting] = useState(false);
+        const [isSuccessAnim, setIsSuccessAnim] = useState(false);
+
+        useEffect(() => {
+          if (isOpen) {
+            setAdminId('');
+            setPassword('');
+            setErrorMessage('');
+            setIsSubmitting(false);
+            setIsSuccessAnim(false);
+            setShowPassword(false);
+          }
+        }, [isOpen]);
+
+        if (!isOpen) return null;
+
+        const handleSubmit = (e) => {
+          e.preventDefault();
+          if (isSubmitting || isSuccessAnim) return;
+
+          if (!adminId.trim()) {
+            setErrorMessage('Please enter your Admin ID');
+            return;
+          }
+          if (!password.trim()) {
+            setErrorMessage('Please enter the Admin Password');
+            return;
+          }
+
+          setIsSubmitting(true);
+          setErrorMessage('');
+
+          const isValid = (adminId.trim().toLowerCase() === 'admin') && (password.trim() === 'kinetic2026');
+
+          setTimeout(() => {
+            if (isValid) {
+              setIsSuccessAnim(true);
+              if (window.soundFx && window.soundFx.playRankUp) {
+                try { window.soundFx.playRankUp(); } catch (err) {}
+              }
+              setTimeout(() => {
+                onSuccess();
+              }, 400);
+            } else {
+              setIsSubmitting(false);
+              setErrorMessage('ACCESS DENIED: Invalid Admin ID or Password');
+              if (window.soundFx && window.soundFx.playRankDown) {
+                try { window.soundFx.playRankDown(); } catch (err) {}
+              }
+            }
+          }, 300);
+        };
+
+        const featureTitle = targetFeature === 'simulator' ? 'Live Event Simulator Access' : 'Telemetry Settings Access';
+        const featureDesc = targetFeature === 'simulator'
+          ? 'Administrative clearance required to inject live simulation events, triggers & score adjustments.'
+          : 'Administrative clearance required to configure Google Sheet data feeds, polling rates & system telemetry.';
+
+        return (
+          <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn font-['Times_New_Roman',Times,serif]">
+            <div className="relative w-full max-w-md bg-[#090c12]/95 border border-[#f59e0b]/40 rounded-2xl shadow-[0_0_50px_rgba(245,158,11,0.25)] overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#f59e0b] to-transparent shadow-[0_0_12px_#f59e0b]" />
+              
+              <div className="px-6 py-4 border-b border-[#1f293d]/80 flex items-center justify-between bg-gradient-to-r from-[#141926] to-[#090c12]">
+                <div className="flex items-center gap-3">
+                  <div className={`p-2 rounded-lg border transition-colors ${isSuccessAnim ? 'bg-green-500/20 border-green-500 text-green-400' : 'bg-[#f59e0b]/15 border-[#f59e0b]/40 text-[#f59e0b]'}`}>
+                    {isSuccessAnim ? '✓' : errorMessage ? '⚠️' : '🛡️'}
+                  </div>
+                  <div>
+                    <h2 className="text-sm sm:text-base font-bold tracking-wider text-white uppercase">Admin Authentication</h2>
+                    <p className="text-[11px] text-[#9ca3af] tracking-wider uppercase">Security Clearance Level 1</p>
+                  </div>
+                </div>
+                <button onClick={onClose} className="p-1.5 text-[#9ca3af] hover:text-white rounded-lg">✕</button>
+              </div>
+
+              <div className="px-6 pt-4 pb-1">
+                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#121622] border border-[#2b3548] text-xs">
+                  <span className="text-[#f59e0b]">⚡</span>
+                  <span className="font-bold text-[#e5e7eb] uppercase tracking-wider">{featureTitle}</span>
+                </div>
+                <p className="text-xs text-[#9ca3af] mt-2 leading-relaxed">{featureDesc}</p>
+              </div>
+
+              <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                {errorMessage && (
+                  <div className="p-3 rounded-lg bg-red-950/60 border border-red-500/50 text-red-300 text-xs flex items-center gap-2 shadow-[0_0_15px_rgba(239,68,68,0.2)]">
+                    <span>⚠️</span>
+                    <span className="font-semibold uppercase tracking-wide">{errorMessage}</span>
+                  </div>
+                )}
+
+                {isSuccessAnim && (
+                  <div className="p-3 rounded-lg bg-green-950/60 border border-green-500/50 text-green-300 text-xs flex items-center gap-2 shadow-[0_0_15px_rgba(34,197,94,0.2)]">
+                    <span>✓</span>
+                    <span className="font-semibold uppercase tracking-wide">ACCESS GRANTED • UNLOCKING FEATURE...</span>
+                  </div>
+                )}
+
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-bold text-[#d1d5db] uppercase tracking-wider">Admin User ID</label>
+                  <input
+                    type="text"
+                    value={adminId}
+                    onChange={e => { setAdminId(e.target.value); if (errorMessage) setErrorMessage(''); }}
+                    placeholder="e.g. admin"
+                    disabled={isSubmitting || isSuccessAnim}
+                    className="w-full px-3 py-2.5 bg-[#0d1017] border border-[#2b3548] focus:border-[#f59e0b] focus:ring-1 focus:ring-[#f59e0b] rounded-lg text-sm text-white placeholder-[#4b5563] outline-none"
+                    autoComplete="username"
+                    autoFocus
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-bold text-[#d1d5db] uppercase tracking-wider">Password</label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={e => { setPassword(e.target.value); if (errorMessage) setErrorMessage(''); }}
+                      placeholder="Enter password"
+                      disabled={isSubmitting || isSuccessAnim}
+                      className="w-full px-3 pr-10 py-2.5 bg-[#0d1017] border border-[#2b3548] focus:border-[#f59e0b] focus:ring-1 focus:ring-[#f59e0b] rounded-lg text-sm text-white placeholder-[#4b5563] outline-none"
+                      autoComplete="current-password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-[#6b7280] hover:text-[#e5e7eb]"
+                    >
+                      {showPassword ? '👁️' : '🔒'}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="pt-2 flex items-center justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    disabled={isSubmitting || isSuccessAnim}
+                    className="px-4 py-2 rounded-lg border border-[#374151] bg-[#111827] text-xs font-bold text-[#9ca3af] hover:text-white uppercase tracking-wider"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting || isSuccessAnim}
+                    className="px-5 py-2.5 rounded-lg bg-gradient-to-r from-[#f59e0b] to-[#d97706] hover:from-[#fbbf24] hover:to-[#f59e0b] text-black font-black text-xs uppercase tracking-widest shadow-[0_0_20px_rgba(245,158,11,0.4)] active:scale-95 transition-all"
+                  >
+                    {isSubmitting ? 'Verifying...' : isSuccessAnim ? 'Unlocked' : 'Authenticate & Unlock'}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         );
@@ -1732,6 +2069,17 @@
         const [isEvaluationConcluded, setIsEvaluationConcluded] = useState(false);
         const [sheetId, setSheetId] = useState('');
         const [pollInterval, setPollInterval] = useState(3500);
+
+        // Admin Security & Access Clearance State
+        const [isAuthenticated, setIsAuthenticated] = useState(() => {
+          try {
+            return sessionStorage.getItem('kinetics_admin_auth') === 'true';
+          } catch (e) {
+            return false;
+          }
+        });
+        const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+        const [targetFeature, setTargetFeature] = useState('general');
 
         const currentDate = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).toUpperCase();
 
@@ -1824,18 +2172,29 @@
                     return '';
                   };
 
+                  const cleanKey = (str) => String(str || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+                  const prevMap = new Map();
+                  teams.forEach(t => {
+                    prevMap.set(cleanKey(t.teamName), t);
+                    prevMap.set(String(t.teamName || '').toLowerCase().trim(), t);
+                    if (t.id) prevMap.set(t.id, t);
+                  });
+
                   const parsed = rawRows.map((r, i) => {
-                    let name = findVal(r, ['team name', 'team_name', 'teamname', 'team', 'participant', 'participants', 'squad', 'team/institution', 'team / institution']);
-                    if (!name) {
+                    let rawName = findVal(r, ['team name', 'team_name', 'teamname', 'team', 'participant', 'participants', 'squad', 'team/institution', 'team / institution']);
+                    if (!rawName) {
                       const candidate = findVal(r, ['name']);
                       if (candidate && !isInvalid(candidate)) {
-                        name = candidate;
+                        rawName = candidate;
                       }
                     }
-                    if (!name || isInvalid(name)) return null;
+                    if (!rawName || isInvalid(rawName)) return null;
 
-                    let inst = findVal(r, ['institute', 'institution', 'college', 'university', 'org', 'inst']);
-                    if (!inst || isInvalid(inst)) inst = 'Autonomous Systems Lab';
+                    const name = toProperCase(rawName.trim());
+
+                    let rawInst = findVal(r, ['institute', 'institution', 'college', 'university', 'org', 'inst']);
+                    if (!rawInst || isInvalid(rawInst)) rawInst = 'Autonomous Systems Lab';
+                    const inst = toProperCase(rawInst.trim());
                     
                     const rawSc = findVal(r, ['total score', 'total_score', 'totalscore', 'final score', 'round score', 'score', 'points', 'total points', 'pts', 'round_score']);
                     const cleanSc = rawSc.replace(/,/g, '').replace(/[^0-9.-]/g, '');
@@ -1845,21 +2204,36 @@
                     const penalty = findVal(r, ['penalty', 'penalties', 'deduction']);
                     const tasks = findVal(r, ['tasks completed', 'tasks_completed', 'tasks', 'completed']);
 
-                    let metric = findVal(r, ['metric', 'metrics', 'metrics / gain', 'telemetry', 'accuracy', 'sensor']);
+                    let metric = findVal(r, ['metric', 'metrics', 'metrics / gain', 'telemetry', 'gain', 'accuracy', 'sensor']);
                     if (!metric) {
                       const parts = [];
                       if (tasks && !isNaN(Number(tasks.replace(/[^0-9]/g, '')))) parts.push(`${tasks.replace(/[^0-9]/g, '')} Tasks`);
-                      if (taskSc && !isNaN(Number(taskSc.replace(/[^0-9.-]/g, '')))) parts.push(`Task: ${taskSc}`);
+                      if (taskSc && !isNaN(Number(taskSc.replace(/[^0-9.-]/g, '')))) parts.push(`Task Score: ${taskSc}`);
                       if (penalty && penalty !== '0' && !isNaN(Number(penalty.replace(/[^0-9.-]/g, '')))) parts.push(`(-${penalty} pen)`);
-                      metric = parts.length > 0 ? parts.join(' • ') : `LiDAR / Sensor accuracy: ${(95 + (i % 5) * 0.9).toFixed(1)}%`;
+                      metric = parts.length > 0 ? parts.join(' • ') : `LiDAR Accuracy: ${(95 + (i % 5) * 0.9).toFixed(1)}%`;
+                    }
+                    metric = toProperCase(metric);
+
+                    const rankChangeRaw = findVal(r, ['rank change', 'change', 'delta', '+/-', 'rank_change', 'gain', 'rank delta', 'shift', 'movement', 'rank_diff']);
+                    let explicitRankChange = null;
+                    if (rankChangeRaw && rankChangeRaw.trim().length > 0) {
+                      const parsedNum = parseInt(rankChangeRaw.replace(/[^0-9+-]/g, ''), 10);
+                      if (!isNaN(parsedNum)) explicitRankChange = parsedNum;
+                    }
+
+                    const prevRankRaw = findVal(r, ['previous rank', 'prev rank', 'prev_rank', 'previous_rank', 'initial rank', 'starting rank', 'last rank', 'prior rank', 'old rank', 'old_rank']);
+                    let explicitPrevRank = null;
+                    if (prevRankRaw && prevRankRaw.trim().length > 0) {
+                      const parsedNum = parseInt(prevRankRaw.replace(/[^0-9]/g, ''), 10);
+                      if (!isNaN(parsedNum)) explicitPrevRank = parsedNum;
                     }
 
                     const stRaw = findVal(r, ['status', 'state', 'condition']).toUpperCase();
-                    let status = 'ACTIVE';
-                    if (stRaw.includes('QUALIF')) status = 'ACTIVE';
-                    else if (stRaw.includes('IN PROG') || stRaw.includes('CALCULAT')) status = 'CALCULATING...';
-                    else if (stRaw.includes('COOL') || stRaw.includes('PAUSE')) status = 'COOLDOWN';
-                    else if (stRaw.includes('OFFLINE')) status = 'OFFLINE';
+                    let status = 'Active';
+                    if (stRaw.includes('QUALIF')) status = 'Active';
+                    else if (stRaw.includes('IN PROG') || stRaw.includes('CALCULAT')) status = 'Calculating...';
+                    else if (stRaw.includes('COOL') || stRaw.includes('PAUSE')) status = 'Cooldown';
+                    else if (stRaw.includes('OFFLINE')) status = 'Offline';
 
                     let instCode = inst;
                     if (inst.length > 12) {
@@ -1876,12 +2250,12 @@
                       }
                     }
 
-                    const cleanSlug = name.toLowerCase().replace(/[^a-z0-9]/g, '-');
+                    const cleanSlug = rawName.toLowerCase().replace(/[^a-z0-9]/g, '-');
                     return {
                       id: `team-${cleanSlug}-${i + 1}`,
                       rank: i + 1,
-                      previousRank: i + 1,
-                      teamName: name.toUpperCase(),
+                      previousRank: explicitPrevRank !== null ? explicitPrevRank : i + 1,
+                      teamName: name,
                       institution: inst,
                       institutionCode: instCode,
                       score,
@@ -1889,18 +2263,58 @@
                       metricLabel: metric,
                       metricType: metric.toLowerCase().includes('neural') ? 'neural' : metric.toLowerCase().includes('point') ? 'pointcloud' : 'lidar',
                       round: 'RND 4',
-                      rankChange: 0,
-                      status
+                      rankChange: explicitRankChange !== null ? explicitRankChange : 0,
+                      status,
+                      explicitRankChange,
+                      explicitPrevRank
                     };
                   }).filter(Boolean);
 
                   if (parsed.length > 0) {
                     parsed.sort((a, b) => b.score - a.score);
-                    const finalTeams = parsed.map((t, idx) => ({
-                      ...t,
-                      rank: idx + 1,
-                      previousRank: idx + 1
-                    }));
+                    let hasRankUp = false;
+                    let hasRankDown = false;
+
+                    const finalTeams = parsed.map((t, idx) => {
+                      const finalRank = idx + 1;
+                      const prev = prevMap.get(cleanKey(t.teamName));
+
+                      let finalRankChange = 0;
+                      let finalPreviousRank = finalRank;
+
+                      if (t.explicitRankChange !== undefined && t.explicitRankChange !== null && !isNaN(t.explicitRankChange)) {
+                        finalRankChange = t.explicitRankChange;
+                        finalPreviousRank = finalRank + finalRankChange;
+                      } else if (t.explicitPrevRank !== undefined && t.explicitPrevRank !== null && !isNaN(t.explicitPrevRank)) {
+                        finalPreviousRank = t.explicitPrevRank;
+                        finalRankChange = finalPreviousRank - finalRank;
+                      } else if (prev) {
+                        if (prev.score !== t.score || prev.rank !== finalRank) {
+                          finalPreviousRank = prev.rank;
+                          finalRankChange = prev.rank - finalRank;
+                        } else {
+                          finalPreviousRank = prev.previousRank || finalRank;
+                          finalRankChange = prev.rankChange || 0;
+                        }
+                      }
+
+                      if (finalRankChange > 0) hasRankUp = true;
+                      if (finalRankChange < 0) hasRankDown = true;
+
+                      return {
+                        ...t,
+                        rank: finalRank,
+                        previousRank: finalPreviousRank,
+                        rankChange: finalRankChange
+                      };
+                    });
+
+                    if (hasRankUp && isSoundEnabled && window.soundFx && window.soundFx.playRankUp) {
+                      try { window.soundFx.playRankUp(); } catch (e) {}
+                    } else if (hasRankDown && isSoundEnabled && window.soundFx && window.soundFx.playRankDown) {
+                      try { window.soundFx.playRankDown(); } catch (e) {}
+                    }
+
                     setTeams(finalTeams);
                     setConnectionState('LIVE');
                   }
@@ -1919,6 +2333,51 @@
           return () => clearInterval(timer);
         }, [dataSource, pollInterval, syncGoogleSheet]);
 
+        // Protected Feature Access Interceptors
+        const handleOpenConfig = () => {
+          if (isAuthenticated) {
+            setIsConfigOpen(true);
+          } else {
+            setTargetFeature('config');
+            setIsAuthModalOpen(true);
+          }
+        };
+
+        const handleOpenSimulator = () => {
+          if (isAuthenticated) {
+            setIsSimulatorOpen(true);
+          } else {
+            setTargetFeature('simulator');
+            setIsAuthModalOpen(true);
+          }
+        };
+
+        const handleAuthSuccess = () => {
+          setIsAuthenticated(true);
+          try {
+            sessionStorage.setItem('kinetics_admin_auth', 'true');
+          } catch (e) {}
+          setIsAuthModalOpen(false);
+
+          if (targetFeature === 'config') {
+            setIsConfigOpen(true);
+          } else if (targetFeature === 'simulator') {
+            setIsSimulatorOpen(true);
+          }
+        };
+
+        const handleLockSession = () => {
+          setIsAuthenticated(false);
+          try {
+            sessionStorage.removeItem('kinetics_admin_auth');
+          } catch (e) {}
+          setIsConfigOpen(false);
+          setIsSimulatorOpen(false);
+          if (window.soundFx && window.soundFx.playRankDown) {
+            try { window.soundFx.playRankDown(); } catch (e) {}
+          }
+        };
+
         return (
           <div className="min-h-screen w-full bg-[#07080b] text-white flex flex-col justify-between relative overflow-x-hidden antialiased">
             <SplineBackground isSplineEnabled={isSplineEnabled} />
@@ -1927,13 +2386,15 @@
               <Header
                 connectionState={connectionState}
                 currentDate={currentDate}
-                onOpenConfig={() => setIsConfigOpen(true)}
-                onOpenSimulator={() => setIsSimulatorOpen(true)}
+                onOpenConfig={handleOpenConfig}
+                onOpenSimulator={handleOpenSimulator}
                 isSoundEnabled={isSoundEnabled}
                 onToggleSound={() => setIsSoundEnabled(!isSoundEnabled)}
                 onManualRefresh={syncGoogleSheet}
                 isEvaluationConcluded={isEvaluationConcluded}
                 onToggleEvaluationConcluded={setIsEvaluationConcluded}
+                isAuthenticated={isAuthenticated}
+                onToggleAuthLock={handleLockSession}
               />
 
               <div className="w-full max-w-7xl mx-auto px-4 pt-1">
@@ -1951,7 +2412,7 @@
 
               <LeaderboardTable teams={teams} />
 
-              <footer className="w-full py-2.5 px-6 border-t border-[#1c212c]/60 bg-[#07080b]/90 backdrop-blur-md flex flex-col sm:flex-row items-center justify-between text-xs text-[#6b7280]">
+              <div className="w-full py-2.5 px-6 border-t border-[#1c212c]/60 bg-[#07080b]/90 backdrop-blur-md flex flex-col sm:flex-row items-center justify-between text-xs text-[#6b7280]">
                 <div className="flex items-center gap-3">
                   <span className="text-[#f59e0b]/80">● KINETICS 2026 AUTONOMOUS ROBOTICS DASHBOARD</span>
                   <span className="hidden md:inline">•</span>
@@ -1962,7 +2423,10 @@
                   <span>POLL: {pollInterval}ms</span>
                   <span>MODE: {isEvaluationConcluded ? '3D CEREMONY' : 'LIVE DASHBOARD'}</span>
                 </div>
-              </footer>
+              </div>
+
+              {/* Official Kinetic Robotics Club Institutional Footer */}
+              <ClubFooter />
             </div>
 
             {/* Simulator Drawer */}
@@ -1973,7 +2437,16 @@
                     <span className="text-[#f59e0b]">⚡</span>
                     <h3 className="text-base font-bold text-white uppercase">Live Event Simulator</h3>
                   </div>
-                  <button onClick={() => setIsSimulatorOpen(false)} className="p-1 text-[#9ca3af] hover:text-white">✕</button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={handleLockSession}
+                      title="Lock Admin Session"
+                      className="px-2 py-0.5 text-xs text-[#9ca3af] hover:text-[#f59e0b] border border-[#374151] rounded"
+                    >
+                      🔒 Lock
+                    </button>
+                    <button onClick={() => setIsSimulatorOpen(false)} className="p-1 text-[#9ca3af] hover:text-white">✕</button>
+                  </div>
                 </div>
                 <div className="p-5 space-y-4 overflow-y-auto flex-1">
                   <p className="text-xs text-[#9ca3af] leading-relaxed">
@@ -2028,7 +2501,9 @@
                         const updated = teams.map((t, idx) => idx === randomIdx ? { ...t, score: t.score + boost } : t);
                         updated.sort((a, b) => b.score - a.score);
                         const reRanked = updated.map((t, idx) => ({ ...t, rank: idx + 1, rankChange: t.rank - (idx + 1) }));
-                        if (isSoundEnabled) soundFx.playRankUp();
+                        if (window.soundFx && window.soundFx.playRankUp) {
+                          try { window.soundFx.playRankUp(); } catch (e) {}
+                        }
                         setTeams(reRanked);
                       }}
                       className="w-full py-2 px-3 rounded bg-[#f59e0b]/15 hover:bg-[#f59e0b]/25 border border-[#f59e0b]/50 text-xs text-[#f59e0b] font-bold"
@@ -2046,7 +2521,9 @@
                         const updated = teams.map(t => t.id === t4.id ? { ...t, score: t2.score + 200 } : t);
                         updated.sort((a, b) => b.score - a.score);
                         const reRanked = updated.map((t, idx) => ({ ...t, rank: idx + 1, rankChange: (teams.find(old => old.id === t.id)?.rank || 0) - (idx + 1) }));
-                        if (isSoundEnabled) soundFx.playRankUp();
+                        if (window.soundFx && window.soundFx.playRankUp) {
+                          try { window.soundFx.playRankUp(); } catch (e) {}
+                        }
                         setTeams(reRanked);
                       }}
                       className="w-full py-2 px-3 rounded bg-[#3b82f6]/15 hover:bg-[#3b82f6]/25 border border-[#3b82f6]/50 text-xs text-[#60a5fa] font-bold"
@@ -2089,7 +2566,16 @@
                 <div className="relative w-full max-w-xl bg-[#0d1017] border border-[#f59e0b]/40 rounded-xl shadow-[0_0_50px_rgba(245,158,11,0.2)] p-6 space-y-5">
                   <div className="flex items-center justify-between border-b border-[#1f293d] pb-3">
                     <h2 className="text-base font-bold text-white uppercase">Telemetry Settings</h2>
-                    <button onClick={() => setIsConfigOpen(false)} className="text-[#9ca3af] hover:text-white">✕</button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={handleLockSession}
+                        title="Lock Admin Session"
+                        className="px-2.5 py-1 text-xs text-[#9ca3af] hover:text-[#f59e0b] border border-[#374151] rounded font-bold uppercase"
+                      >
+                        🔒 Lock
+                      </button>
+                      <button onClick={() => setIsConfigOpen(false)} className="text-[#9ca3af] hover:text-white">✕</button>
+                    </div>
                   </div>
                   <div className="space-y-4">
                     {/* Hackathon Evaluation State Toggle */}
@@ -2171,6 +2657,14 @@
                 </div>
               </div>
             )}
+
+            {/* Admin Authentication Gate Modal */}
+            <AdminAuthModal
+              isOpen={isAuthModalOpen}
+              onClose={() => setIsAuthModalOpen(false)}
+              onSuccess={handleAuthSuccess}
+              targetFeature={targetFeature}
+            />
           </div>
         );
       }

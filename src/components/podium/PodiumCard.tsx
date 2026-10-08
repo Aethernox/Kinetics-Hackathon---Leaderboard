@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Team } from '../../types/leaderboard';
 import { ArrowDown } from 'lucide-react';
+import { toProperCase } from '../../utils/text';
 
 interface PodiumCardProps {
   team: Team;
@@ -143,14 +144,14 @@ export const PodiumCard: React.FC<PodiumCardProps> = ({ team, rankPosition }) =>
 
             <div className="flex flex-col">
               <h3
-                className={`font-black uppercase tracking-wider text-white leading-tight ${
+                className={`font-bold tracking-wide text-white leading-tight ${
                   isFirst ? 'text-lg md:text-xl' : 'text-base md:text-lg'
                 }`}
               >
-                {team.teamName}
+                {toProperCase(team.teamName)}
               </h3>
-              <span className="text-xs font-semibold tracking-wider text-[#9ca3af] uppercase">
-                {team.institutionCode || team.institution}
+              <span className="text-xs font-semibold tracking-wider text-[#9ca3af]">
+                {toProperCase(team.institutionCode || team.institution)}
               </span>
             </div>
           </div>

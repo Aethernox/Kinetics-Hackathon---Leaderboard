@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Check, AlertTriangle, RefreshCw, Key, Database, Globe, Trophy, Activity } from 'lucide-react';
+import { X, Check, AlertTriangle, RefreshCw, Key, Database, Globe, Trophy, Activity, Lock } from 'lucide-react';
 import { GoogleSheetConfig } from '../../types/leaderboard';
 import { fetchGoogleSheetData } from '../../services/googleSheets';
 
@@ -16,6 +16,7 @@ interface ConfigModalProps {
   onToggleSound: (enabled: boolean) => void;
   isEvaluationConcluded?: boolean;
   onToggleEvaluationConcluded?: (concluded: boolean) => void;
+  onLockSession?: () => void;
 }
 
 export const ConfigModal: React.FC<ConfigModalProps> = ({
@@ -31,6 +32,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
   onToggleSound,
   isEvaluationConcluded = false,
   onToggleEvaluationConcluded,
+  onLockSession,
 }) => {
   const [sheetId, setSheetId] = useState(config.sheetId || '');
   const [sheetName, setSheetName] = useState(config.sheetName || 'Sheet1');
@@ -90,12 +92,25 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
               Dashboard Telemetry Settings
             </h2>
           </div>
-          <button
-            onClick={onClose}
-            className="p-1 text-[#9ca3af] hover:text-white hover:bg-white/10 rounded-lg transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            {onLockSession && (
+              <button
+                type="button"
+                onClick={onLockSession}
+                title="Lock Admin Session"
+                className="px-2.5 py-1 text-xs text-[#9ca3af] hover:text-[#f59e0b] hover:bg-[#1f2937] border border-[#374151] rounded-lg transition-colors flex items-center gap-1.5 font-bold uppercase tracking-wider"
+              >
+                <Lock className="w-3.5 h-3.5 text-[#f59e0b]" />
+                <span className="hidden sm:inline">Lock Session</span>
+              </button>
+            )}
+            <button
+              onClick={onClose}
+              className="p-1 text-[#9ca3af] hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {/* Content */}

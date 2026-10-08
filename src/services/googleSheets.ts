@@ -1,5 +1,6 @@
 import { Team, GoogleSheetConfig, TeamStatus, MetricType } from '../types/leaderboard';
 import { INITIAL_TEAMS } from './mockData';
+import { toProperCase } from '../utils/text';
 
 /**
  * Normalizes metric types for visual icon rendering
@@ -107,7 +108,7 @@ export function parseGvizResponse(jsonText: string): Record<string, string>[] {
 
   let headers = (data.table.cols || []).map((col: any) => (col.label || col.id || '').trim().toLowerCase());
 
-  const hasNamedHeaders = headers.some(h => 
+  const hasNamedHeaders = headers.some((h: string) => 
     h.includes('team') || h.includes('name') || h.includes('score') || h.includes('inst') || h.includes('rank') || h.includes('total') || h.includes('task')
   );
 
@@ -119,7 +120,7 @@ export function parseGvizResponse(jsonText: string): Record<string, string>[] {
       return String(val !== null && val !== undefined ? val : '').trim().toLowerCase();
     });
 
-    const isFirstRowHeader = firstRowValues.some(v => 
+    const isFirstRowHeader = firstRowValues.some((v: string) => 
       v.includes('team') || v.includes('name') || v.includes('score') || v.includes('inst') || v.includes('rank') || v.includes('total') || v.includes('penalty')
     );
 
@@ -218,40 +219,51 @@ function findValue(row: Record<string, string>, possibleKeys: string[]): string 
  * Normalizes raw sheet row data into structured Team objects
  */
 export function normalizeSheetData(rawRows: Record<string, string>[], previousTeams: Team[] = []): Team[] {
+  const cleanKey = (str: string) => str.toLowerCase().replace(/[^a-z0-9]/g, '');
+
   const previousMap = new Map<string, Team>();
   previousTeams.forEach(t => {
-    previousMap.set(t.teamName.toLowerCase(), t);
-    previousMap.set(t.id, t);
+    previousMap.set(cleanKey(t.teamName), t);
+    previousMap.set(t.teamName.toLowerCase().trim(), t);
+    if (t.id) previousMap.set(t.id, t);
   });
 
-  const parsedTeams: Team[] = [];
+  interface ParsedTeamIntermediate extends Team {
+    explicitRankChange?: number | null;
+    explicitPrevRank?: number | null;
+  }
+
+  const parsedTeams: ParsedTeamIntermediate[] = [];
 
   rawRows.forEach((row, index) => {
     // 1. Team Name: Look for explicit semantic headers first
-    let teamName = findValue(row, [
+    let rawTeamName = findValue(row, [
       'team name', 'team_name', 'teamname', 'team', 'participant', 'participants', 'squad', 'team/institution', 'team / institution'
     ]);
 
     // If still not found, check generic 'name' header only if it is not a survey column
-    if (!teamName) {
+    if (!rawTeamName) {
       const candidateName = findValue(row, ['name']);
       if (candidateName && !isInvalidTeamName(candidateName)) {
-        teamName = candidateName;
+        rawTeamName = candidateName;
       }
     }
 
     // Validate team name strictly
-    if (!teamName || isInvalidTeamName(teamName)) {
+    if (!rawTeamName || isInvalidTeamName(rawTeamName)) {
       return; // Skip invalid or survey rows (e.g. Male, Female, Freshman, Headers)
     }
 
+    const teamName = toProperCase(rawTeamName.trim());
+
     // 2. Institute
-    let institution = findValue(row, [
+    let rawInstitution = findValue(row, [
       'institute', 'institution', 'college', 'university', 'org', 'organization', 'inst'
     ]);
-    if (!institution || isInvalidTeamName(institution)) {
-      institution = 'Autonomous Systems Lab';
+    if (!rawInstitution || isInvalidTeamName(rawInstitution)) {
+      rawInstitution = 'Autonomous Systems Lab';
     }
+    const institution = toProperCase(rawInstitution.trim());
 
     // 3. Total Score
     const rawScore = findValue(row, [
@@ -283,33 +295,49 @@ export function normalizeSheetData(rawRows: Record<string, string>[], previousTe
       if (parts.length > 0) {
         metricLabel = parts.join(' • ');
       } else {
-        metricLabel = `LiDAR / Sensor accuracy: ${(95 + (index % 5) * 0.9).toFixed(1)}%`;
+        metricLabel = `LiDAR Accuracy: ${(95 + (index % 5) * 0.9).toFixed(1)}%`;
       }
     }
+    metricLabel = toProperCase(metricLabel);
 
-    // 6. Rank & Rank Change
+    // 6. Check explicit Rank, Rank Change, or Previous Rank from Google Sheet
     const rawRank = findValue(row, ['rank', 'position', '#', 'pos', 'standing']);
     const rankNum = parseInt(rawRank.replace(/[^0-9]/g, ''), 10) || (index + 1);
+
+    const rankChangeRaw = findValue(row, ['rank change', 'change', 'delta', '+/-', 'rank_change', 'gain', 'rank delta', 'shift', 'movement', 'rank_diff']);
+    let explicitRankChange: number | null = null;
+    if (rankChangeRaw && rankChangeRaw.trim().length > 0) {
+      const parsedNum = parseInt(rankChangeRaw.replace(/[^0-9+-]/g, ''), 10);
+      if (!isNaN(parsedNum)) explicitRankChange = parsedNum;
+    }
+
+    const prevRankRaw = findValue(row, ['previous rank', 'prev rank', 'prev_rank', 'previous_rank', 'initial rank', 'starting rank', 'last rank', 'prior rank', 'old rank', 'old_rank']);
+    let explicitPrevRank: number | null = null;
+    if (prevRankRaw && prevRankRaw.trim().length > 0) {
+      const parsedNum = parseInt(prevRankRaw.replace(/[^0-9]/g, ''), 10);
+      if (!isNaN(parsedNum)) explicitPrevRank = parsedNum;
+    }
 
     const statusRaw = findValue(row, ['status', 'state', 'condition']);
     const status = normalizeStatus(statusRaw);
     const round = findValue(row, ['round', 'rnd', 'stage']) || 'RND 4';
     const logo = findValue(row, ['logo', 'icon', 'image', 'avatar']);
 
-    // Check previous standing to calculate real rank change
-    const prev = previousMap.get(teamName.toLowerCase());
-    const previousRank = prev ? prev.rank : rankNum;
+    // Check previous standing to calculate initial rank change
+    const prev = previousMap.get(cleanKey(teamName));
+    const previousRank = explicitPrevRank !== null ? explicitPrevRank : (prev ? prev.rank : rankNum);
     const previousScore = prev ? prev.score : scoreNum;
 
-    const rankChangeRaw = findValue(row, ['rank change', 'change', 'delta', '+/-', 'rank_change']);
     let rankChange = 0;
-    if (rankChangeRaw) {
-      rankChange = parseInt(rankChangeRaw.replace(/[^0-9+-]/g, ''), 10) || 0;
+    if (explicitRankChange !== null) {
+      rankChange = explicitRankChange;
+    } else if (explicitPrevRank !== null) {
+      rankChange = explicitPrevRank - rankNum;
     } else if (prev) {
       rankChange = prev.rank - rankNum;
     }
 
-    const cleanTeamSlug = teamName.toLowerCase().replace(/[^a-z0-9]/g, '-');
+    const cleanTeamSlug = rawTeamName.toLowerCase().replace(/[^a-z0-9]/g, '-');
     const teamId = `team-${cleanTeamSlug}-${index + 1}`;
 
     // Institution code: short abbreviation
@@ -332,7 +360,7 @@ export function normalizeSheetData(rawRows: Record<string, string>[], previousTe
       id: teamId,
       rank: rankNum,
       previousRank,
-      teamName: teamName.toUpperCase(),
+      teamName,
       institution,
       institutionCode,
       logo: logo || undefined,
@@ -347,9 +375,11 @@ export function normalizeSheetData(rawRows: Record<string, string>[], previousTe
       lastUpdated: findValue(row, ['last updated', 'last_updated', 'updated', 'time']) || new Date().toISOString(),
       details: {
         accuracy: parseFloat(metricLabel.match(/\d+(\.\d+)?/)?.[0] || '96.5'),
-        sensorHealth: status === 'ACTIVE' ? 'OPTIMAL (98%)' : status,
+        sensorHealth: status === 'ACTIVE' ? 'Optimal (98%)' : status,
         algorithm: `${teamName} Core v4`
-      }
+      },
+      explicitRankChange,
+      explicitPrevRank
     });
   });
 
@@ -360,16 +390,40 @@ export function normalizeSheetData(rawRows: Record<string, string>[], previousTe
   // Sort by score descending
   parsedTeams.sort((a, b) => b.score - a.score);
 
-  // Recalculate ranks based on sorted scores
+  // Recalculate ranks and live rank changes
   return parsedTeams.map((team, idx) => {
     const finalRank = idx + 1;
-    const prev = previousMap.get(team.teamName.toLowerCase());
-    const rankDelta = prev ? prev.rank - finalRank : (team.rankChange || 0);
+    const prev = previousMap.get(cleanKey(team.teamName));
+
+    let finalRankChange = 0;
+    let finalPreviousRank = finalRank;
+
+    if (team.explicitRankChange !== undefined && team.explicitRankChange !== null && !isNaN(team.explicitRankChange)) {
+      // 1. Explicit rank change column in sheet takes top priority
+      finalRankChange = team.explicitRankChange;
+      finalPreviousRank = finalRank + finalRankChange;
+    } else if (team.explicitPrevRank !== undefined && team.explicitPrevRank !== null && !isNaN(team.explicitPrevRank)) {
+      // 2. Explicit previous rank column in sheet
+      finalPreviousRank = team.explicitPrevRank;
+      finalRankChange = finalPreviousRank - finalRank;
+    } else if (prev) {
+      // 3. Dynamic live rank delta detection
+      if (prev.score !== team.score || prev.rank !== finalRank) {
+        // Score or position shifted during this poll cycle!
+        finalPreviousRank = prev.rank;
+        finalRankChange = prev.rank - finalRank;
+      } else {
+        // Score & rank unchanged: maintain the established rank change and previous rank
+        finalPreviousRank = prev.previousRank || finalRank;
+        finalRankChange = prev.rankChange || 0;
+      }
+    }
+
     return {
       ...team,
       rank: finalRank,
-      previousRank: prev ? prev.rank : finalRank,
-      rankChange: rankDelta
+      previousRank: finalPreviousRank,
+      rankChange: finalRankChange
     };
   });
 }

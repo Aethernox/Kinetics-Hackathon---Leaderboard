@@ -11,6 +11,9 @@ export const TelemetryHUD: React.FC<TelemetryHUDProps> = ({ round = 'RND 4', isE
       {/* Coordinates / Status Telemetry Bar */}
       <div className="flex items-center justify-center gap-4 sm:gap-8 w-full max-w-2xl text-[11px] sm:text-xs text-[#9ca3af]/85 tracking-[0.25em] uppercase mb-1.5">
         <span className="hidden sm:inline-block text-[#6b7280]">COORDINATES: 28.6139° N, 77.2090° E</span>
+        <span className="text-[#f59e0b] font-bold px-1.5 py-0.5 rounded bg-[#f59e0b]/10 border border-[#f59e0b]/30 text-[10px]">
+          {round}
+        </span>
         <span className={`${isEvaluationConcluded ? 'text-[#f59e0b]' : 'text-[#f59e0b]'} font-semibold flex items-center gap-1.5`}>
           <span className={`w-1.5 h-1.5 rounded-full ${isEvaluationConcluded ? 'bg-[#f59e0b] shadow-[0_0_8px_#f59e0b]' : 'bg-[#f59e0b] animate-pulse'}`} />
           {isEvaluationConcluded ? '🏆 COMPETITION EVALUATION CONCLUDED 🏆' : 'AUTONOMOUS SYSTEMS TELEMETRY'}

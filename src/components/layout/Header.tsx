@@ -1,18 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { Volume2, VolumeX, Maximize, Minimize, Settings, Sliders, RefreshCw, Trophy } from 'lucide-react';
+import { Volume2, VolumeX, Maximize, Minimize, Settings, Sliders, RefreshCw, Unlock } from 'lucide-react';
 import { ConnectionState } from '../../types/leaderboard';
 
 interface HeaderProps {
   connectionState: ConnectionState;
-  lastSyncTimestamp: number | null;
+  lastSyncTimestamp?: number | null;
   isSoundEnabled: boolean;
   onToggleSound: () => void;
   onOpenConfig: () => void;
   onOpenSimulator: () => void;
   onManualRefresh?: () => void;
-  dataSource: string;
+  dataSource?: string;
   isEvaluationConcluded?: boolean;
   onToggleEvaluationConcluded?: (concluded: boolean) => void;
+  isAuthenticated?: boolean;
+  onToggleAuthLock?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -23,9 +25,11 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenConfig,
   onOpenSimulator,
   onManualRefresh,
-  dataSource,
+  dataSource: _dataSource,
   isEvaluationConcluded = false,
   onToggleEvaluationConcluded,
+  isAuthenticated = false,
+  onToggleAuthLock,
 }) => {
   const [currentDate, setCurrentDate] = useState('');
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -105,16 +109,14 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className="relative w-full z-20 border-b border-[#262c3a]/60 bg-[#07080b]/85 backdrop-blur-md px-4 sm:px-8 py-3 flex items-center justify-between font-['Times_New_Roman',Times,serif]">
-      {/* Left: Kinetics Logo (Kinetic Logo.png) & Hackathon 2026 Branding */}
+      {/* Left: Kinetic Logo & Hackathon 2026 Branding */}
       <div className="flex items-center gap-3">
-        {/* Kinetic Logo Image added as it is */}
         <img
-          src="Kinetics Logo.png"
+          src="logo.png"
           alt="Kinetics Logo"
           className="h-10 sm:h-12 w-auto object-contain flex-shrink-0"
           onError={(e) => {
-            // Fallback to relative path if needed
-            (e.target as HTMLImageElement).src = './Kinetics Logo.png';
+            (e.target as HTMLImageElement).src = './logo.png';
           }}
         />
 
@@ -173,7 +175,7 @@ export const Header: React.FC<HeaderProps> = ({
           {onManualRefresh && (
             <button
               onClick={onManualRefresh}
-              title="Manual Sync Google Sheet"
+              title={lastSyncTimestamp ? `Sync Google Sheet (Last Sync: ${new Date(lastSyncTimestamp).toLocaleTimeString()})` : "Manual Sync Google Sheet"}
               className="p-1.5 text-[#9ca3af] hover:text-[#f59e0b] hover:bg-[#1f2937] rounded transition-colors"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${connectionState === 'SYNCING' ? 'animate-spin text-[#f59e0b]' : ''}`} />
@@ -190,19 +192,43 @@ export const Header: React.FC<HeaderProps> = ({
 
           <button
             onClick={onOpenSimulator}
-            title="Open Live Simulator / Quick Controls"
-            className="p-1.5 text-[#9ca3af] hover:text-[#f59e0b] hover:bg-[#1f2937] rounded transition-colors"
+            title={isAuthenticated ? "Open Live Simulator Controls (Admin Unlocked)" : "Open Live Simulator (Admin ID & Password Required)"}
+            className={`p-1.5 rounded transition-colors relative ${
+              isAuthenticated 
+                ? 'text-[#f59e0b] hover:bg-[#f59e0b]/20 hover:text-white' 
+                : 'text-[#9ca3af] hover:text-[#f59e0b] hover:bg-[#1f2937]'
+            }`}
           >
             <Sliders className="w-3.5 h-3.5" />
+            {!isAuthenticated && (
+              <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-[#f59e0b]/70" />
+            )}
           </button>
 
           <button
             onClick={onOpenConfig}
-            title="Google Sheets & Dashboard Settings"
-            className="p-1.5 text-[#9ca3af] hover:text-[#f59e0b] hover:bg-[#1f2937] rounded transition-colors"
+            title={isAuthenticated ? "Dashboard & Telemetry Settings (Admin Unlocked)" : "Dashboard & Telemetry Settings (Admin ID & Password Required)"}
+            className={`p-1.5 rounded transition-colors relative ${
+              isAuthenticated 
+                ? 'text-[#f59e0b] hover:bg-[#f59e0b]/20 hover:text-white' 
+                : 'text-[#9ca3af] hover:text-[#f59e0b] hover:bg-[#1f2937]'
+            }`}
           >
             <Settings className="w-3.5 h-3.5" />
+            {!isAuthenticated && (
+              <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-[#f59e0b]/70" />
+            )}
           </button>
+
+          {isAuthenticated && onToggleAuthLock && (
+            <button
+              onClick={onToggleAuthLock}
+              title="Admin Session Active (Click to Lock Session)"
+              className="p-1.5 text-[#22c55e] hover:text-[#ef4444] hover:bg-[#1f2937] rounded transition-colors"
+            >
+              <Unlock className="w-3.5 h-3.5" />
+            </button>
+          )}
 
           <button
             onClick={toggleFullscreen}
