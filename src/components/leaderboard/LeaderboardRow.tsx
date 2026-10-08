@@ -28,7 +28,7 @@ export const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ team }) => {
 
   return (
     <div
-      className={`group relative grid grid-cols-12 items-center px-4 sm:px-8 py-4 sm:py-5 border-b border-white/[0.08] transition-all duration-200 font-sans hover:bg-white/[0.04] ${
+      className={`group relative grid grid-cols-12 items-center px-4 sm:px-8 py-4 sm:py-5 border-b border-white/[0.08] transition-all duration-200 font-jetbrains leaderboard-table hover:bg-white/[0.04] ${
         isFirst ? 'bg-[#f59e0b]/[0.03]' : isSecond ? 'bg-[#38bdf8]/[0.02]' : isThird ? 'bg-[#f97316]/[0.02]' : ''
       }`}
     >

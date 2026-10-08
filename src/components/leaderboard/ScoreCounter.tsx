@@ -33,7 +33,7 @@ export const ScoreCounter: React.FC<ScoreCounterProps> = ({ score, className = '
   }, [score]);
 
   return (
-    <div className={`flex items-baseline gap-1.5 font-sans tabular-nums ${className}`}>
+    <div className={`flex items-baseline gap-1.5 font-jetbrains tabular-nums ${className}`}>
       <span className="font-semibold tracking-tight text-[#fafafa]">
         {displayScore.toLocaleString()}
       </span>

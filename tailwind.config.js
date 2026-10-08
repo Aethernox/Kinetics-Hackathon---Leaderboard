@@ -20,11 +20,13 @@ export default {
         }
       },
       fontFamily: {
-        orbitron: ['"Times New Roman"', 'Times', 'serif'],
-        rajdhani: ['"Times New Roman"', 'Times', 'serif'],
-        mono: ['"Times New Roman"', 'Times', 'serif'],
-        sans: ['"Times New Roman"', 'Times', 'serif'],
-        serif: ['"Times New Roman"', 'Times', 'serif'],
+        nova: ['"Nova Mono"', 'monospace'],
+        mono: ['"Nova Mono"', 'monospace'],
+        sans: ['"Nova Mono"', 'monospace'],
+        vt323: ['"VT323"', 'monospace'],
+        terminal: ['"VT323"', 'monospace'],
+        jetbrains: ['"JetBrains Mono"', 'monospace'],
+        table: ['"JetBrains Mono"', 'monospace'],
       }
     },
   },

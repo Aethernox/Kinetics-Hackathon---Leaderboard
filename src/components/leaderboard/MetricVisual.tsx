@@ -11,7 +11,7 @@ export const MetricVisual: React.FC<MetricVisualProps> = ({ label }) => {
   const formattedLabel = label ? toProperCase(label) : 'Autonomous SLAM Feed';
 
   return (
-    <div className="flex items-center overflow-hidden font-sans">
+    <div className="flex items-center overflow-hidden font-jetbrains">
       <span className="text-xs sm:text-sm text-[#a7a6a6] tracking-normal truncate">
         {formattedLabel}
       </span>

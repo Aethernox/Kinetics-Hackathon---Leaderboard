@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Volume2, VolumeX } from 'lucide-react';
 import { soundFx } from '../../services/audioEffects';
 import { getCinematicConfig } from '../../config/cinematic.config';
 
@@ -107,37 +108,39 @@ export const TerminalBoot: React.FC<TerminalBootProps> = ({ onComplete }) => {
     <div
       role="dialog"
       aria-label="System Boot Terminal"
-      className={`fixed inset-0 z-50 bg-[#050608]/95 flex items-center justify-center p-4 sm:p-6 transition-all duration-700 select-none overflow-hidden font-mono ${
+      className={`fixed inset-0 z-50 bg-[#050505]/95 backdrop-blur-2xl flex items-center justify-center p-4 sm:p-6 transition-all duration-700 select-none overflow-hidden font-vt323 terminal-font ${
         isTransitioning ? 'opacity-0 scale-105 pointer-events-none' : 'opacity-100 scale-100'
       }`}
     >
-      {/* Background CRT scanline & subtle noise overlay */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.5)_50%)] bg-[length:100%_4px] pointer-events-none opacity-40" />
-      <div className="absolute inset-0 bg-radial-gradient from-[#b91c1c]/10 via-transparent to-transparent pointer-events-none" />
+      {/* Background Subtle Cyber Glow Overlay */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(245,158,11,0.03)_50%,rgba(0,0,0,0.6)_50%)] bg-[length:100%_4px] pointer-events-none opacity-30" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-gradient-to-b from-[#f59e0b]/[0.08] via-[#38bdf8]/[0.04] to-transparent blur-3xl pointer-events-none" />
 
       {/* Main Terminal Frame */}
-      <div className="relative w-full max-w-2xl bg-[#090b10]/95 border border-[#dc2626]/50 rounded-sm p-5 sm:p-7 shadow-[0_0_50px_rgba(220,38,38,0.2)] backdrop-blur-md">
+      <div className="relative w-full max-w-2xl bg-[#090b10]/95 border border-[#f59e0b]/40 rounded-xl p-5 sm:p-7 shadow-[0_0_60px_rgba(245,158,11,0.2)] backdrop-blur-2xl transition-all duration-300">
+        
         {/* Top Header Corner Brackets & System Code */}
-        <div className="flex items-center justify-between border-b border-[#dc2626]/30 pb-3 mb-5 text-[11px] sm:text-xs tracking-[0.2em] text-[#9ca3af]">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 bg-[#dc2626] animate-pulse" />
-            <span className="text-[#f87171] font-bold">{config.systemCode}</span>
+        <div className="flex items-center justify-between border-b border-white/10 pb-3 mb-5 text-sm sm:text-base tracking-[0.18em] text-[#94a3b8]">
+          <div className="flex items-center gap-2.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#f59e0b] animate-pulse shadow-[0_0_8px_#f59e0b]" />
+            <span className="text-[#fde68a] font-bold uppercase">{config.systemCode}</span>
           </div>
-          {/* Cyber Hatch Pattern */}
-          <div className="flex items-center gap-1 opacity-70">
-            <span className="h-3 w-1 bg-[#dc2626]" />
-            <span className="h-3 w-1 bg-[#dc2626]" />
-            <span className="h-3 w-1 bg-[#dc2626]" />
-            <span className="h-3 w-1 bg-[#dc2626]" />
+
+          {/* Cyber Hatch Status Pattern */}
+          <div className="flex items-center gap-1 opacity-80">
+            <span className="h-3 w-1 bg-[#f59e0b] rounded-xs shadow-[0_0_4px_#f59e0b]" />
+            <span className="h-3 w-1 bg-[#f59e0b] rounded-xs shadow-[0_0_4px_#f59e0b]" />
+            <span className="h-3 w-1 bg-[#f59e0b] rounded-xs shadow-[0_0_4px_#f59e0b]" />
+            <span className="h-3 w-1 bg-[#f59e0b] rounded-xs shadow-[0_0_4px_#f59e0b]" />
           </div>
         </div>
 
         {/* Terminal Content Output Area */}
-        <div className="space-y-2.5 min-h-[140px] text-xs sm:text-sm text-[#e5e7eb] font-mono leading-relaxed">
+        <div className="space-y-2.5 min-h-[160px] text-base sm:text-lg text-[#e2e8f0] font-vt323 leading-relaxed tracking-wider">
           {typedLines.map((line, idx) => (
-            <div key={idx} className="flex items-start gap-2">
-              <span className="text-[#dc2626] font-bold select-none">&gt;</span>
-              <span className={idx === 0 ? 'text-[#f87171] font-bold' : 'text-[#d1d5db]'}>
+            <div key={idx} className="flex items-start gap-2.5">
+              <span className="text-[#f59e0b] font-bold select-none text-lg">&gt;</span>
+              <span className={idx === 0 ? 'text-[#fbbf24] font-bold drop-shadow-[0_0_10px_rgba(245,158,11,0.3)]' : 'text-[#e2e8f0]'}>
                 {line}
               </span>
             </div>
@@ -145,37 +148,40 @@ export const TerminalBoot: React.FC<TerminalBootProps> = ({ onComplete }) => {
 
           {/* Active Typing Line with Blinking Cursor */}
           {currentLineText && (
-            <div className="flex items-start gap-2">
-              <span className="text-[#dc2626] font-bold select-none">&gt;</span>
-              <span className="text-[#d1d5db]">{currentLineText}</span>
-              <span className="inline-block w-2 h-4 bg-[#dc2626] animate-pulse ml-0.5 align-middle" />
+            <div className="flex items-start gap-2.5">
+              <span className="text-[#f59e0b] font-bold select-none text-lg">&gt;</span>
+              <span className="text-[#e2e8f0]">{currentLineText}</span>
+              <span className="inline-block w-2.5 h-5 bg-[#f59e0b] animate-pulse ml-0.5 align-middle shadow-[0_0_6px_#f59e0b]" />
             </div>
           )}
 
           {!currentLineText && !isTypingComplete && typedLines.length > 0 && (
-            <div className="flex items-start gap-2">
-              <span className="text-[#dc2626] font-bold select-none">&gt;</span>
-              <span className="inline-block w-2 h-4 bg-[#dc2626] animate-pulse" />
+            <div className="flex items-start gap-2.5">
+              <span className="text-[#f59e0b] font-bold select-none text-lg">&gt;</span>
+              <span className="inline-block w-2.5 h-5 bg-[#f59e0b] animate-pulse shadow-[0_0_6px_#f59e0b]" />
             </div>
           )}
         </div>
 
         {/* Segmented Progress Loading Bar */}
-        <div className="mt-6 pt-4 border-t border-[#1f2430]">
-          <div className="flex items-center justify-between text-[11px] text-[#9ca3af] mb-2 font-mono tracking-wider">
-            <span className="text-[#f87171] font-bold">
+        <div className="mt-6 pt-4 border-t border-white/10">
+          <div className="flex items-center justify-between text-sm text-[#94a3b8] mb-2 font-vt323 tracking-wider">
+            <span className={progress === 100 ? 'text-emerald-400 font-bold flex items-center gap-1.5' : 'text-[#fde68a] font-bold'}>
+              {progress === 100 && <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />}
               {progress < 100 ? 'INITIALIZING TELEMETRY PIPELINE' : 'CLEARANCE VERIFIED'}
             </span>
-            <span>{progress}%</span>
+            <span className="font-bold text-white tabular-nums text-base">{progress}%</span>
           </div>
 
-          <div className="flex gap-1 h-3.5 bg-[#05070a] p-0.5 border border-[#374151]/80 rounded-sm">
+          <div className="flex gap-1 h-3.5 bg-[#05070a] p-0.5 border border-white/10 rounded-md">
             {Array.from({ length: totalSegments }).map((_, idx) => (
               <div
                 key={idx}
-                className={`flex-1 transition-all duration-75 ${
+                className={`flex-1 rounded-xs transition-all duration-75 ${
                   idx < filledSegments
-                    ? 'bg-gradient-to-t from-[#991b1b] to-[#ef4444] shadow-[0_0_6px_rgba(239,68,68,0.6)]'
+                    ? progress === 100
+                      ? 'bg-gradient-to-t from-[#059669] to-[#34d399] shadow-[0_0_6px_rgba(52,211,153,0.8)]'
+                      : 'bg-gradient-to-t from-[#d97706] via-[#f59e0b] to-[#fbbf24] shadow-[0_0_6px_rgba(245,158,11,0.8)]'
                     : 'bg-[#111622]/60'
                 }`}
               />
@@ -185,31 +191,33 @@ export const TerminalBoot: React.FC<TerminalBootProps> = ({ onComplete }) => {
 
         {/* Audio Output Selection Action Screen */}
         <div
-          className={`mt-7 pt-4 border-t border-[#dc2626]/30 transition-all duration-500 flex flex-col items-center text-center ${
+          className={`mt-7 pt-4 border-t border-white/10 transition-all duration-500 flex flex-col items-center text-center ${
             isTypingComplete ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 pointer-events-none'
           }`}
         >
-          <p className="text-xs sm:text-sm font-bold tracking-[0.2em] text-[#fca5a5] uppercase mb-4">
+          <p className="text-sm sm:text-base font-bold tracking-[0.2em] text-[#fde68a] uppercase mb-4 drop-shadow-[0_0_8px_rgba(245,158,11,0.3)]">
             [ CLEARANCE COMPLETE • SELECT AUDIO PROTOCOL ]
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center gap-3 w-full max-w-md">
-            {/* Enter with Sound (Primary Red Glow Button) */}
+          <div className="flex flex-col sm:flex-row items-center gap-3.5 w-full max-w-md">
+            {/* Enter with Sound (Primary Golden Amber Glow Button) */}
             <button
               id="btn-enter-with-sound"
               onClick={() => handleSelectAudio(true)}
-              className="group relative w-full sm:flex-1 py-3 px-4 bg-[#dc2626] hover:bg-[#ef4444] text-black font-black text-xs sm:text-sm tracking-[0.2em] uppercase rounded-sm transition-all duration-200 shadow-[0_0_24px_rgba(220,38,38,0.5)] hover:shadow-[0_0_36px_rgba(239,68,68,0.8)] active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+              className="group relative w-full sm:flex-1 py-3 px-4 bg-gradient-to-r from-[#f59e0b] via-[#fbbf24] to-[#d97706] hover:brightness-110 text-black font-bold text-base sm:text-lg tracking-[0.16em] uppercase rounded-lg transition-all duration-200 shadow-[0_0_25px_rgba(245,158,11,0.4)] hover:shadow-[0_0_35px_rgba(245,158,11,0.7)] active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
             >
-              <span>🔊 ENTER WITH SOUND</span>
+              <Volume2 className="w-4 h-4 text-black flex-shrink-0" />
+              <span>ENTER WITH SOUND</span>
             </button>
 
             {/* Enter without Sound (Muted Outlined Button) */}
             <button
               id="btn-enter-without-sound"
               onClick={() => handleSelectAudio(false)}
-              className="w-full sm:flex-1 py-3 px-4 bg-[#11141d]/80 hover:bg-[#1f2433] text-[#9ca3af] hover:text-white border border-[#374151] hover:border-[#9ca3af] font-bold text-xs sm:text-sm tracking-[0.18em] uppercase rounded-sm transition-all duration-200 active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full sm:flex-1 py-3 px-4 bg-[#0d111a]/90 hover:bg-[#161d2c] text-[#cbd5e1] hover:text-white border border-white/15 hover:border-white/40 font-bold text-base sm:text-lg tracking-[0.16em] uppercase rounded-lg transition-all duration-200 active:scale-95 flex items-center justify-center gap-2 cursor-pointer shadow-sm"
             >
-              <span>🔇 ENTER WITHOUT SOUND</span>
+              <VolumeX className="w-4 h-4 text-[#cbd5e1] group-hover:text-white flex-shrink-0" />
+              <span>ENTER WITHOUT SOUND</span>
             </button>
           </div>
         </div>

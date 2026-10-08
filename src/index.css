@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Nova+Mono&family=VT323&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -24,21 +24,37 @@
   --rank-silver: #38bdf8;
   --rank-bronze: #f97316;
 
-  font-family: 'Manrope', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-family: 'Nova Mono', monospace;
   text-rendering: geometricPrecision;
   -webkit-font-smoothing: antialiased;
 }
 
+.nova-mono-regular {
+  font-family: "Nova Mono", monospace;
+  font-weight: 400;
+  font-style: normal;
+}
+
 html, body, #root {
-  font-family: 'Manrope', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Nova Mono', monospace;
 }
 
 *, ::before, ::after {
-  font-family: 'Manrope', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Nova Mono', monospace;
 }
 
-code, kbd, samp, pre, .font-mono, [class*="font-mono"] {
-  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+code, kbd, samp, pre, .font-mono, [class*="font-mono"], .font-sans, [class*="font-sans"], .font-ibm, [class*="font-ibm"], .font-nova, [class*="font-nova"] {
+  font-family: 'Nova Mono', monospace !important;
+}
+
+/* Dedicated Terminal Font Rule (VT323) */
+.font-vt323, .font-terminal, [class*="font-vt323"], [class*="font-terminal"], .terminal-font, .terminal-font * {
+  font-family: 'VT323', monospace !important;
+}
+
+/* Dedicated Live Leaderboard Table Font Rule (JetBrains Mono) */
+.font-jetbrains, .font-table, [class*="font-jetbrains"], [class*="font-table"], .leaderboard-table, .leaderboard-table * {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace !important;
 }
 
 body {

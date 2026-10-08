@@ -8,9 +8,9 @@ interface LeaderboardTableProps {
 
 export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({ teams }) => {
   return (
-    <div className="w-full max-w-6xl mx-auto px-4 sm:px-8 pb-16 select-none relative z-10 font-sans">
+    <div className="w-full max-w-6xl mx-auto px-4 sm:px-8 pb-16 select-none relative z-10 font-jetbrains leaderboard-table">
       {/* Table Container: Flat Surface with Hairline Borders */}
-      <div className="w-full rounded-2xl border border-white/[0.08] bg-[#0a0a0a]/60 backdrop-blur-xl overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.7)]">
+      <div className="w-full rounded-2xl border border-white/[0.08] bg-[#0a0a0a]/60 backdrop-blur-xl overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.7)] font-jetbrains leaderboard-table">
         {/* Table Column Headers */}
         <div className="grid grid-cols-12 items-center px-4 sm:px-8 py-4 border-b border-white/[0.10] bg-white/[0.02] text-[11px] sm:text-xs font-medium tracking-[0.2em] uppercase text-[#a7a6a6]">
           <div className="col-span-2 sm:col-span-1 text-left">
