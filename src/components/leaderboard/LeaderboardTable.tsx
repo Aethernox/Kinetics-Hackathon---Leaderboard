@@ -49,8 +49,11 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({ teams }) => 
               />
             ))
           ) : (
-            <div className="py-16 text-center text-sm text-[#71717a]">
-              No active data feeds detected
+            <div className="py-20 flex flex-col items-center justify-center gap-3 text-center text-sm text-[#a7a6a6]">
+              <div className="w-5 h-5 border-2 border-[#f59e0b] border-t-transparent rounded-full animate-spin shadow-[0_0_12px_rgba(245,158,11,0.5)]" />
+              <span className="font-mono text-xs tracking-widest uppercase text-[#fafafa]">
+                SYNCHRONIZING LIVE GOOGLE SHEET TELEMETRY FEED...
+              </span>
             </div>
           )}
         </div>

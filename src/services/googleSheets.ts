@@ -432,11 +432,15 @@ export function normalizeSheetData(rawRows: Record<string, string>[], previousTe
  * Fetches Google Sheet data using best available endpoint
  */
 export async function fetchGoogleSheetData(config: GoogleSheetConfig, previousTeams: Team[] = []): Promise<Team[]> {
-  const { sheetId, sheetName, apiKey } = config;
+  const { sheetId: rawSheetId, sheetName, apiKey } = config;
 
-  if (!sheetId || sheetId.trim().length === 0) {
+  if (!rawSheetId || rawSheetId.trim().length === 0) {
     throw new Error('Google Sheet ID is required.');
   }
+
+  // Extract clean ID if full Google Sheet URL is provided
+  const match = rawSheetId.match(/\/d\/([a-zA-Z0-9-_]+)/);
+  const sheetId = match ? match[1] : rawSheetId.trim();
 
   // Option A: If Google Sheets API Key provided, use official Google Sheets v4 API
   if (apiKey && apiKey.trim().length > 0) {

@@ -33,22 +33,36 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
   const [sheetId, setSheetId] = useState(config.sheetId || '');
   const [sheetName, setSheetName] = useState(config.sheetName || 'Sheet1');
   const [apiKey, setApiKey] = useState(config.apiKey || '');
-  const [pollIntervalMs, setPollIntervalMs] = useState(config.pollIntervalMs || 3000);
+  const [pollIntervalMs, setPollIntervalMs] = useState(config.pollIntervalMs || 3500);
   const [testState, setTestState] = useState<{ loading: boolean; success?: boolean; message?: string }>({
     loading: false,
   });
 
+  React.useEffect(() => {
+    if (isOpen) {
+      setSheetId(config.sheetId || '');
+      setSheetName(config.sheetName || 'Sheet1');
+      setApiKey(config.apiKey || '');
+      setPollIntervalMs(config.pollIntervalMs || 3500);
+      setTestState({ loading: false });
+    }
+  }, [isOpen, config]);
+
   if (!isOpen) return null;
 
   const handleTestConnection = async () => {
-    if (!sheetId.trim()) {
-      setTestState({ loading: false, success: false, message: 'Please enter a Google Sheet ID' });
+    const rawVal = sheetId.trim();
+    const match = rawVal.match(/\/d\/([a-zA-Z0-9-_]+)/);
+    const cleanId = match ? match[1] : rawVal;
+
+    if (!cleanId) {
+      setTestState({ loading: false, success: false, message: 'Please enter a Google Sheet ID or URL' });
       return;
     }
     setTestState({ loading: true });
     try {
       const teams = await fetchGoogleSheetData({
-        sheetId: sheetId.trim(),
+        sheetId: cleanId,
         sheetName: sheetName.trim(),
         apiKey: apiKey.trim() || undefined,
         pollIntervalMs,
@@ -68,11 +82,15 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
   };
 
   const handleSave = () => {
+    const rawVal = sheetId.trim();
+    const match = rawVal.match(/\/d\/([a-zA-Z0-9-_]+)/);
+    const cleanId = match ? match[1] : rawVal;
+
     onSaveConfig({
-      sheetId: sheetId.trim(),
+      sheetId: cleanId,
       sheetName: sheetName.trim(),
       apiKey: apiKey.trim() || undefined,
-      pollIntervalMs: Number(pollIntervalMs) || 3000,
+      pollIntervalMs: Number(pollIntervalMs) || 3500,
     });
     onClose();
   };

@@ -19,6 +19,36 @@ import { ConfigModal } from './components/common/ConfigModal';
 import { SimulatorDrawer } from './components/common/SimulatorDrawer';
 import { AdminAuthModal, ProtectedFeature } from './components/common/AdminAuthModal';
 
+const getInitialSheetConfig = (): GoogleSheetConfig => {
+  const rawIdOrUrl = (
+    import.meta.env.VITE_GOOGLE_SHEET_ID ||
+    import.meta.env.VITE_DATA_SOURCE ||
+    ''
+  ).trim();
+  const match = rawIdOrUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
+  const sheetId = match ? match[1] : (rawIdOrUrl.startsWith('http') ? '' : rawIdOrUrl);
+  const sheetName = (import.meta.env.VITE_GOOGLE_SHEET_NAME || 'Sheet1').trim();
+  const apiKey = (import.meta.env.VITE_GOOGLE_SHEETS_API_KEY || '').trim() || undefined;
+  const pollIntervalMs = Number(import.meta.env.VITE_LEADERBOARD_POLL_INTERVAL) || 3500;
+
+  return {
+    sheetId,
+    sheetName,
+    apiKey,
+    pollIntervalMs,
+  };
+};
+
+const getInitialDataSource = (config: GoogleSheetConfig): 'google-sheets' | 'mock' | 'simulator' => {
+  const raw = (import.meta.env.VITE_DATA_SOURCE || '').trim().toLowerCase();
+  if (raw === 'mock') return 'mock';
+  if (raw === 'simulator') return 'simulator';
+  if (config.sheetId || raw.includes('google') || raw.startsWith('http')) {
+    return 'google-sheets';
+  }
+  return 'google-sheets';
+};
+
 export const App: React.FC = () => {
   const cinematicConfig = getCinematicConfig();
 
@@ -36,10 +66,21 @@ export const App: React.FC = () => {
   // Dynamic Scroll Progress State (0 to 1) for the cinematic scroll transformation
   const [scrollProgress, setScrollProgress] = useState<number>(0);
 
-  const [teams, setTeams] = useState<Team[]>(INITIAL_TEAMS);
-  const [connectionState, setConnectionState] = useState<ConnectionState>('LIVE');
-  const [lastSyncTimestamp, setLastSyncTimestamp] = useState<number | null>(Date.now());
-  const [dataSource, setDataSource] = useState<'google-sheets' | 'mock' | 'simulator'>('mock');
+  const [sheetConfig, setSheetConfig] = useState<GoogleSheetConfig>(() => getInitialSheetConfig());
+  const [dataSource, setDataSource] = useState<'google-sheets' | 'mock' | 'simulator'>(() =>
+    getInitialDataSource(getInitialSheetConfig())
+  );
+  const [teams, setTeams] = useState<Team[]>(() => {
+    const initConfig = getInitialSheetConfig();
+    const initSource = getInitialDataSource(initConfig);
+    return initSource === 'google-sheets' && initConfig.sheetId ? [] : INITIAL_TEAMS;
+  });
+  const [connectionState, setConnectionState] = useState<ConnectionState>(() => {
+    const initConfig = getInitialSheetConfig();
+    const initSource = getInitialDataSource(initConfig);
+    return initSource === 'google-sheets' && initConfig.sheetId ? 'SYNCING' : 'LIVE';
+  });
+  const [lastSyncTimestamp, setLastSyncTimestamp] = useState<number | null>(null);
   const [isSplineEnabled, setIsSplineEnabled] = useState(true);
   const [isSoundEnabled, setIsSoundEnabled] = useState<boolean>(() => {
     return soundFx.getPreference() !== 'disabled';
@@ -51,12 +92,6 @@ export const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => isSessionAuthenticated());
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [targetFeature, setTargetFeature] = useState<ProtectedFeature>('general');
-
-  const [sheetConfig, setSheetConfig] = useState<GoogleSheetConfig>({
-    sheetId: '',
-    sheetName: 'Sheet1',
-    pollIntervalMs: 3500,
-  });
 
   const teamsRef = useRef(teams);
   teamsRef.current = teams;
@@ -119,6 +154,9 @@ export const App: React.FC = () => {
     } catch (err) {
       console.warn('Google Sheet live sync interrupted:', err);
       setConnectionState('DELAYED');
+      if (teamsRef.current.length === 0) {
+        setTeams(INITIAL_TEAMS);
+      }
     }
   }, [dataSource, sheetConfig, isSoundEnabled]);
 
