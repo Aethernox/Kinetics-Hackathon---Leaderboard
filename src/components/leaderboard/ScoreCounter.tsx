@@ -14,7 +14,7 @@ export const ScoreCounter: React.FC<ScoreCounterProps> = ({ score, className = '
     const endScore = score;
     if (startScore === endScore) return;
 
-    const duration = 1000;
+    const duration = 800;
     const startTime = performance.now();
 
     const animate = (time: number) => {
@@ -33,15 +33,16 @@ export const ScoreCounter: React.FC<ScoreCounterProps> = ({ score, className = '
   }, [score]);
 
   return (
-    <div className={`flex items-baseline gap-1 font-['Times_New_Roman',Times,serif] ${className}`}>
-      <span className="font-bold tracking-tight">
+    <div className={`flex items-baseline gap-1.5 font-sans tabular-nums ${className}`}>
+      <span className="font-semibold tracking-tight text-[#fafafa]">
         {displayScore.toLocaleString()}
       </span>
       {suffix && (
-        <span className="text-xs font-semibold text-[#9ca3af] uppercase">
+        <span className="text-[10px] sm:text-xs font-normal text-[#a7a6a6] uppercase tracking-wider">
           {suffix}
         </span>
       )}
     </div>
   );
 };
+

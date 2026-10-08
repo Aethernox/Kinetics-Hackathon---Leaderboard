@@ -11,10 +11,11 @@ interface HeaderProps {
   onOpenSimulator: () => void;
   onManualRefresh?: () => void;
   dataSource?: string;
-  isEvaluationConcluded?: boolean;
-  onToggleEvaluationConcluded?: (concluded: boolean) => void;
   isAuthenticated?: boolean;
   onToggleAuthLock?: () => void;
+  onScrollToTop?: () => void;
+  onScrollToPodium?: () => void;
+  onScrollToTable?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -26,10 +27,11 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenSimulator,
   onManualRefresh,
   dataSource: _dataSource,
-  isEvaluationConcluded = false,
-  onToggleEvaluationConcluded,
   isAuthenticated = false,
   onToggleAuthLock,
+  onScrollToTop,
+  onScrollToPodium,
+  onScrollToTable,
 }) => {
   const [currentDate, setCurrentDate] = useState('');
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -38,7 +40,7 @@ export const Header: React.FC<HeaderProps> = ({
     const updateDate = () => {
       const now = new Date();
       const options: Intl.DateTimeFormatOptions = {
-        month: 'long',
+        month: 'short',
         day: 'numeric',
         year: 'numeric',
       };
@@ -51,10 +53,10 @@ export const Header: React.FC<HeaderProps> = ({
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch(() => {});
+      document.documentElement.requestFullscreen().catch(() => { });
       setIsFullscreen(true);
     } else {
-      document.exitFullscreen().catch(() => {});
+      document.exitFullscreen().catch(() => { });
       setIsFullscreen(false);
     }
   };
@@ -63,44 +65,36 @@ export const Header: React.FC<HeaderProps> = ({
     switch (connectionState) {
       case 'LIVE':
         return {
-          text: 'DATA FEED ACTIVE',
+          text: 'FEED ACTIVE',
           badgeText: 'LIVE',
-          badgeBg: 'bg-[#ef4444]',
-          dotColor: 'bg-white',
-          glow: 'shadow-[0_0_12px_#ef4444]',
-          subColor: 'text-[#f59e0b]',
-          icon: '⚡',
+          badgeBg: 'bg-white text-black',
+          dotColor: 'bg-black',
+          subColor: 'text-neutral-400',
         };
       case 'SYNCING':
         return {
-          text: 'SYNCING FEED...',
+          text: 'SYNCING...',
           badgeText: 'SYNC',
-          badgeBg: 'bg-[#f59e0b]',
-          dotColor: 'bg-white',
-          glow: 'shadow-[0_0_12px_#f59e0b]',
-          subColor: 'text-[#f59e0b]',
-          icon: '🔄',
+          badgeBg: 'bg-neutral-200 text-black',
+          dotColor: 'bg-black',
+          subColor: 'text-neutral-400',
         };
       case 'DELAYED':
         return {
           text: 'FEED DELAYED',
-          badgeText: 'LAG',
-          badgeBg: 'bg-[#d97706]',
-          dotColor: 'bg-[#fef3c7]',
-          glow: 'shadow-[0_0_8px_#d97706]',
-          subColor: 'text-[#fbbf24]',
-          icon: '⚠️',
+          badgeText: 'DELAYED',
+          badgeBg: 'bg-neutral-800 text-neutral-300',
+          dotColor: 'bg-neutral-400',
+          subColor: 'text-neutral-500',
         };
       case 'OFFLINE':
       default:
         return {
-          text: 'DATA FEED INTERRUPTED',
+          text: 'FEED OFFLINE',
           badgeText: 'OFFLINE',
-          badgeBg: 'bg-[#4b5563]',
-          dotColor: 'bg-[#9ca3af]',
-          glow: 'none',
-          subColor: 'text-[#9ca3af]',
-          icon: '✕',
+          badgeBg: 'bg-neutral-900 text-neutral-500',
+          dotColor: 'bg-neutral-600',
+          subColor: 'text-neutral-600',
         };
     }
   };
@@ -108,115 +102,147 @@ export const Header: React.FC<HeaderProps> = ({
   const status = getStatusDisplay();
 
   return (
-    <header className="relative w-full z-20 border-b border-[#262c3a]/60 bg-[#07080b]/85 backdrop-blur-md px-4 sm:px-8 py-3 flex items-center justify-between font-['Times_New_Roman',Times,serif]">
-      {/* Left: Kinetic Logo & Hackathon 2026 Branding */}
-      <div className="flex items-center gap-3">
-        <img
-          src="logo.png"
-          alt="Kinetics Logo"
-          className="h-10 sm:h-12 w-auto object-contain flex-shrink-0"
-          onError={(e) => {
-            (e.target as HTMLImageElement).src = './logo.png';
-          }}
-        />
-
-        {/* Brand Text */}
-        <div className="flex items-center gap-2.5">
-          <span className="text-xl sm:text-2xl md:text-3xl font-black tracking-[0.12em] text-white drop-shadow-md">
-            KINETIC
-          </span>
-          <span className="h-5 w-[1.5px] bg-[#4b5563]" />
-          <span className="text-sm sm:text-base font-semibold tracking-[0.15em] text-[#9ca3af] uppercase">
-            HACKATHON 2026
-          </span>
-        </div>
-      </div>
-
-      {/* Center: LEADERBOARD Tab with active glow indicator */}
-      <div className="hidden md:flex flex-col items-center">
-        <div className="relative px-6 py-1">
-          <span className="text-sm sm:text-base font-bold tracking-[0.2em] text-white uppercase">
-            LEADERBOARD
-          </span>
-          <div className="absolute bottom-0 left-2 right-2 h-[2px] bg-gradient-to-r from-transparent via-[#f59e0b] to-transparent shadow-[0_0_8px_#f59e0b]" />
-        </div>
-      </div>
-
-      {/* Right: Dynamic Date + Status Indicator + Controls */}
-      <div className="flex items-center gap-3 sm:gap-4">
-        {/* Dynamic Date & Telemetry Text */}
-        <div className="hidden sm:flex flex-col items-end text-right">
-          <span className="text-xs sm:text-sm font-bold tracking-wider text-[#e5e7eb]">
-            {currentDate || 'OCTOBER 7, 2026'}
-          </span>
-          <span className={`text-[10px] tracking-wide ${isEvaluationConcluded ? 'text-[#f59e0b] font-bold' : status.subColor} flex items-center gap-1`}>
-            <span>{isEvaluationConcluded ? '🏆' : status.icon}</span> {isEvaluationConcluded ? 'FINAL RESULTS LOCKED' : status.text}
-          </span>
-        </div>
-
-        {/* Live Pill Badge / Concluded Badge */}
+    <header className="sticky top-0 w-full z-40 border-b border-white/[0.08] bg-[#050505]/80 backdrop-blur-xl px-4 sm:px-8 py-3.5 flex items-center justify-between font-sans select-none transition-colors">
+      {/* Left: Brand / Kinetics Identity */}
+      <div className="flex items-center gap-4">
         <button
-          onClick={() => onToggleEvaluationConcluded?.(!isEvaluationConcluded)}
-          title={isEvaluationConcluded ? 'Switch to Live 2D View' : 'Conclude & Launch 3D Podium'}
-          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full cursor-pointer transition-all duration-300 ${
-            isEvaluationConcluded
-              ? 'bg-[#f59e0b] shadow-[0_0_15px_rgba(245,158,11,0.6)] text-black'
-              : `${status.badgeBg} ${status.glow} text-white`
-          }`}
+          onClick={onScrollToTop}
+          className="flex items-center gap-3 cursor-pointer group text-left"
         >
-          <span className={`w-2 h-2 rounded-full ${isEvaluationConcluded ? 'bg-black' : status.dotColor} animate-pulse`} />
-          <span className="text-[11px] font-black tracking-widest uppercase">
-            {isEvaluationConcluded ? '🏆 3D FINAL' : status.badgeText}
-          </span>
+          <img
+            src="logo.png"
+            alt="Kinetics Logo"
+            className="h-7 sm:h-8 w-auto object-contain flex-shrink-0 opacity-90 group-hover:opacity-100 transition-opacity"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = './logo.png';
+            }}
+          />
+
+          <div className="flex items-center gap-2.5">
+            <span className="text-sm sm:text-base font-semibold tracking-[0.16em] text-[#fafafa] uppercase">
+              KINETICS
+            </span>
+            <span className="hidden sm:inline h-3 w-[1px] bg-white/20" />
+            <span className="hidden sm:inline text-[11px] font-medium tracking-[0.2em] text-[#a7a6a6] uppercase">
+              LIVE LEADERBOARD
+            </span>
+          </div>
+        </button>
+      </div>
+
+      {/* Center: Minimal Text-Based Navigation */}
+      <nav
+        aria-label="Header Navigation"
+        className="hidden md:flex items-center gap-7 text-xs font-medium tracking-[0.18em] uppercase text-[#a7a6a6]"
+      >
+        <button
+          onClick={onScrollToTop}
+          className="hover:text-white transition-colors cursor-pointer py-1"
+        >
+          OVERVIEW
         </button>
 
-        {/* Action Controls */}
-        <div className="flex items-center gap-1 bg-[#111827]/80 border border-[#374151]/50 rounded-lg p-0.5">
+        <button
+          onClick={onScrollToPodium}
+          className="hover:text-white transition-colors cursor-pointer py-1"
+        >
+          TOP RANKINGS
+        </button>
+
+        <button
+          onClick={onScrollToTable}
+          className="text-white transition-colors cursor-pointer py-1 border-b border-white"
+        >
+          FULL BOARD
+        </button>
+      </nav>
+
+      {/* Right: Real-Time Status, Audio, Admin Clearances & White Pill Action */}
+      <div className="flex items-center gap-3 sm:gap-4">
+        {/* Dynamic Date & Telemetry Text */}
+        <div className="hidden lg:flex flex-col items-end text-right">
+          <span className="text-xs font-medium tracking-wider text-[#fafafa]">
+            {currentDate || 'OCTOBER 2026'}
+          </span>
+          <span className={`text-[10px] tracking-wide ${status.subColor} font-mono`}>
+            {status.text}
+          </span>
+        </div>
+
+        {/* Live Status Pill */}
+        <div
+          className={`flex items-center gap-1.5 px-3 py-1 rounded-full border border-white/20 ${status.badgeBg} text-xs font-semibold tracking-wider uppercase shadow-sm`}
+        >
+          <span className={`w-1.5 h-1.5 rounded-full ${status.dotColor} animate-subtlePulse`} />
+          <span className="text-[10px] sm:text-[11px] font-bold">
+            {status.badgeText}
+          </span>
+        </div>
+
+        {/* Action Controls Group */}
+        <div className="flex items-center gap-1 bg-white/[0.04] border border-white/10 rounded-full p-1">
           {onManualRefresh && (
             <button
               onClick={onManualRefresh}
-              title={lastSyncTimestamp ? `Sync Google Sheet (Last Sync: ${new Date(lastSyncTimestamp).toLocaleTimeString()})` : "Manual Sync Google Sheet"}
-              className="p-1.5 text-[#9ca3af] hover:text-[#f59e0b] hover:bg-[#1f2937] rounded transition-colors"
+              title={
+                lastSyncTimestamp
+                  ? `Sync Feed (Last Sync: ${new Date(lastSyncTimestamp).toLocaleTimeString()})`
+                  : 'Manual Sync'
+              }
+              className="p-1.5 text-[#a7a6a6] hover:text-white hover:bg-white/10 rounded-full transition-colors cursor-pointer"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${connectionState === 'SYNCING' ? 'animate-spin text-[#f59e0b]' : ''}`} />
+              <RefreshCw
+                className={`w-3.5 h-3.5 ${connectionState === 'SYNCING' ? 'animate-spin text-white' : ''
+                  }`}
+              />
             </button>
           )}
 
           <button
             onClick={onToggleSound}
-            title={isSoundEnabled ? 'Mute Audio FX' : 'Enable Sci-Fi Audio FX'}
-            className="p-1.5 text-[#9ca3af] hover:text-[#f59e0b] hover:bg-[#1f2937] rounded transition-colors"
+            title={isSoundEnabled ? 'Mute Audio FX' : 'Enable Audio FX'}
+            className="p-1.5 text-[#a7a6a6] hover:text-white hover:bg-white/10 rounded-full transition-colors cursor-pointer"
           >
-            {isSoundEnabled ? <Volume2 className="w-3.5 h-3.5 text-[#f59e0b]" /> : <VolumeX className="w-3.5 h-3.5 text-[#6b7280]" />}
+            {isSoundEnabled ? (
+              <Volume2 className="w-3.5 h-3.5 text-white" />
+            ) : (
+              <VolumeX className="w-3.5 h-3.5 text-[#71717a]" />
+            )}
           </button>
 
           <button
             onClick={onOpenSimulator}
-            title={isAuthenticated ? "Open Live Simulator Controls (Admin Unlocked)" : "Open Live Simulator (Admin ID & Password Required)"}
-            className={`p-1.5 rounded transition-colors relative ${
-              isAuthenticated 
-                ? 'text-[#f59e0b] hover:bg-[#f59e0b]/20 hover:text-white' 
-                : 'text-[#9ca3af] hover:text-[#f59e0b] hover:bg-[#1f2937]'
-            }`}
+            title={
+              isAuthenticated
+                ? 'Open Live Simulator Controls (Unlocked)'
+                : 'Open Live Simulator (Password Required)'
+            }
+            className={`p-1.5 rounded-full transition-colors relative cursor-pointer ${isAuthenticated
+                ? 'text-white hover:bg-white/15'
+                : 'text-[#a7a6a6] hover:text-white hover:bg-white/10'
+              }`}
           >
             <Sliders className="w-3.5 h-3.5" />
             {!isAuthenticated && (
-              <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-[#f59e0b]/70" />
+              <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-white/60" />
             )}
           </button>
 
           <button
             onClick={onOpenConfig}
-            title={isAuthenticated ? "Dashboard & Telemetry Settings (Admin Unlocked)" : "Dashboard & Telemetry Settings (Admin ID & Password Required)"}
-            className={`p-1.5 rounded transition-colors relative ${
-              isAuthenticated 
-                ? 'text-[#f59e0b] hover:bg-[#f59e0b]/20 hover:text-white' 
-                : 'text-[#9ca3af] hover:text-[#f59e0b] hover:bg-[#1f2937]'
-            }`}
+            title={
+              isAuthenticated
+                ? 'Leaderboard Settings (Unlocked)'
+                : 'Leaderboard Settings (Password Required)'
+            }
+            className={`p-1.5 rounded-full transition-colors relative cursor-pointer ${isAuthenticated
+                ? 'text-white hover:bg-white/15'
+                : 'text-[#a7a6a6] hover:text-white hover:bg-white/10'
+              }`}
           >
             <Settings className="w-3.5 h-3.5" />
             {!isAuthenticated && (
-              <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-[#f59e0b]/70" />
+              <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-white/60" />
             )}
           </button>
 
@@ -224,7 +250,7 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               onClick={onToggleAuthLock}
               title="Admin Session Active (Click to Lock Session)"
-              className="p-1.5 text-[#22c55e] hover:text-[#ef4444] hover:bg-[#1f2937] rounded transition-colors"
+              className="p-1.5 text-white hover:bg-white/20 rounded-full transition-colors cursor-pointer"
             >
               <Unlock className="w-3.5 h-3.5" />
             </button>
@@ -232,10 +258,14 @@ export const Header: React.FC<HeaderProps> = ({
 
           <button
             onClick={toggleFullscreen}
-            title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen Command Center Mode (1080p/4K)'}
-            className="p-1.5 text-[#9ca3af] hover:text-[#f59e0b] hover:bg-[#1f2937] rounded transition-colors"
+            title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen Mode'}
+            className="p-1.5 text-[#a7a6a6] hover:text-white hover:bg-white/10 rounded-full transition-colors cursor-pointer"
           >
-            {isFullscreen ? <Minimize className="w-3.5 h-3.5" /> : <Maximize className="w-3.5 h-3.5" />}
+            {isFullscreen ? (
+              <Minimize className="w-3.5 h-3.5" />
+            ) : (
+              <Maximize className="w-3.5 h-3.5" />
+            )}
           </button>
         </div>
       </div>

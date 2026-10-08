@@ -11,7 +11,7 @@ export const SocialButton: React.FC<SocialButtonProps> = ({ social }) => {
       case 'github':
         return (
           <svg
-            className="w-5.5 h-5.5 sm:w-6 sm:h-6 fill-current transition-transform duration-300 group-hover:scale-110"
+            className="w-4.5 h-4.5 sm:w-5 sm:h-5 fill-current transition-transform duration-200 group-hover:scale-110"
             viewBox="0 0 24 24"
             aria-hidden="true"
           >
@@ -21,7 +21,7 @@ export const SocialButton: React.FC<SocialButtonProps> = ({ social }) => {
       case 'linkedin':
         return (
           <svg
-            className="w-5.5 h-5.5 sm:w-6 sm:h-6 fill-current transition-transform duration-300 group-hover:scale-110"
+            className="w-4.5 h-4.5 sm:w-5 sm:h-5 fill-current transition-transform duration-200 group-hover:scale-110"
             viewBox="0 0 24 24"
             aria-hidden="true"
           >
@@ -29,9 +29,10 @@ export const SocialButton: React.FC<SocialButtonProps> = ({ social }) => {
           </svg>
         );
       case 'x':
+      case 'youtube':
         return (
           <svg
-            className="w-5 h-5 sm:w-5.5 sm:h-5.5 fill-current transition-transform duration-300 group-hover:scale-110"
+            className="w-4 h-4 sm:w-[18px] sm:h-[18px] fill-current transition-transform duration-200 group-hover:scale-110"
             viewBox="0 0 24 24"
             aria-hidden="true"
           >
@@ -41,7 +42,7 @@ export const SocialButton: React.FC<SocialButtonProps> = ({ social }) => {
       case 'instagram':
         return (
           <svg
-            className="w-5.5 h-5.5 sm:w-6 sm:h-6 fill-none stroke-current stroke-[2] transition-transform duration-300 group-hover:scale-110"
+            className="w-4.5 h-4.5 sm:w-5 sm:h-5 fill-none stroke-current stroke-[2] transition-transform duration-200 group-hover:scale-110"
             viewBox="0 0 24 24"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -55,7 +56,7 @@ export const SocialButton: React.FC<SocialButtonProps> = ({ social }) => {
       case 'website':
         return (
           <svg
-            className="w-5.5 h-5.5 sm:w-6 sm:h-6 fill-none stroke-current stroke-[2] transition-transform duration-300 group-hover:scale-110"
+            className="w-4.5 h-4.5 sm:w-5 sm:h-5 fill-none stroke-current stroke-[2] transition-transform duration-200 group-hover:scale-110"
             viewBox="0 0 24 24"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -64,17 +65,6 @@ export const SocialButton: React.FC<SocialButtonProps> = ({ social }) => {
             <circle cx="12" cy="12" r="10" />
             <line x1="2" y1="12" x2="22" y2="12" />
             <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-          </svg>
-        );
-      case 'youtube':
-        return (
-          <svg
-            className="w-5.5 h-5.5 sm:w-6 sm:h-6 fill-current transition-transform duration-300 group-hover:scale-110"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-            <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z" />
-            <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02" fill="#07080b" />
           </svg>
         );
       default:
@@ -88,24 +78,16 @@ export const SocialButton: React.FC<SocialButtonProps> = ({ social }) => {
       target="_blank"
       rel="noopener noreferrer"
       aria-label={social.ariaLabel}
-      className="group flex flex-col items-center gap-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f59e0b] rounded-2xl p-1.5 transition-all duration-300"
+      className="group flex flex-col items-center gap-1.5 focus:outline-none rounded-xl p-1 transition-all duration-300 select-none min-w-[50px] sm:min-w-[58px]"
     >
-      {/* Circular Futuristic Button Surface with Dual Gold Glowing Ring */}
-      <div className="relative w-13 h-13 sm:w-15 sm:h-15 rounded-full flex items-center justify-center bg-gradient-to-b from-[#141926]/90 to-[#090c12]/95 border border-[#f59e0b]/35 text-[#f3f4f6] group-hover:text-[#f59e0b] group-hover:border-[#f59e0b] group-hover:bg-[#151b28] group-hover:shadow-[0_0_24px_rgba(245,158,11,0.6)] group-hover:-translate-y-1.5 active:scale-95 transition-all duration-300">
-        {/* Subtle Ambient Radial Highlight */}
-        <div className="absolute inset-0 rounded-full bg-gradient-to-b from-[#f59e0b]/15 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-        
-        {/* Fine gold inner bezel ring */}
-        <div className="absolute inset-1 rounded-full border border-[#f59e0b]/10 group-hover:border-[#f59e0b]/30 transition-colors pointer-events-none" />
-
-        {/* Icon */}
-        <div className="relative z-10">{renderIcon()}</div>
+      <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full flex items-center justify-center bg-[#12161f]/80 border border-white/10 text-[#d1d5db] group-hover:text-white group-hover:border-[#f59e0b]/60 group-hover:bg-[#f59e0b]/15 group-hover:shadow-[0_0_20px_rgba(245,158,11,0.35)] active:scale-95 transition-all duration-300">
+        <div className="relative z-10 flex items-center justify-center">{renderIcon()}</div>
       </div>
 
-      {/* Text Label Below Icon */}
-      <span className="text-[11px] sm:text-xs font-semibold tracking-widest text-[#9ca3af] group-hover:text-[#f59e0b] transition-colors duration-200 uppercase">
+      <span className="text-[10px] font-mono font-bold tracking-wider text-[#94a3b8] group-hover:text-[#fde68a] transition-colors uppercase whitespace-nowrap">
         {social.label}
       </span>
     </a>
   );
 };
+

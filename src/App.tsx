@@ -4,11 +4,15 @@ import { INITIAL_TEAMS } from './services/mockData';
 import { fetchGoogleSheetData } from './services/googleSheets';
 import { soundFx } from './services/audioEffects';
 import { isSessionAuthenticated, setSessionAuthenticated } from './services/auth';
+import { getCinematicConfig } from './config/cinematic.config';
 import { Header } from './components/layout/Header';
-import { TelemetryHUD } from './components/layout/TelemetryHUD';
+import { LeftCommandRail } from './components/layout/LeftCommandRail';
 import { Footer } from './components/layout/Footer';
-import { SplineBackground } from './components/spline/SplineBackground';
-import { Hero3D } from './components/hero3d';
+import {
+  TerminalBoot,
+  HeroCinematicSection,
+  CinematicVideoBackground,
+} from './components/cinematic';
 import { Podium } from './components/podium/Podium';
 import { LeaderboardTable } from './components/leaderboard/LeaderboardTable';
 import { ConfigModal } from './components/common/ConfigModal';
@@ -16,15 +20,32 @@ import { SimulatorDrawer } from './components/common/SimulatorDrawer';
 import { AdminAuthModal, ProtectedFeature } from './components/common/AdminAuthModal';
 
 export const App: React.FC = () => {
+  const cinematicConfig = getCinematicConfig();
+
+  // Cinematic Boot Sequence State Machine
+  const [isBootCompleted, setIsBootCompleted] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('skipBoot') === 'true' || urlParams.get('boot') === 'false') {
+        return true;
+      }
+    }
+    return !cinematicConfig.bootEnabled;
+  });
+
+  // Dynamic Scroll Progress State (0 to 1) for the cinematic scroll transformation
+  const [scrollProgress, setScrollProgress] = useState<number>(0);
+
   const [teams, setTeams] = useState<Team[]>(INITIAL_TEAMS);
   const [connectionState, setConnectionState] = useState<ConnectionState>('LIVE');
   const [lastSyncTimestamp, setLastSyncTimestamp] = useState<number | null>(Date.now());
   const [dataSource, setDataSource] = useState<'google-sheets' | 'mock' | 'simulator'>('mock');
   const [isSplineEnabled, setIsSplineEnabled] = useState(true);
-  const [isSoundEnabled, setIsSoundEnabled] = useState(true);
+  const [isSoundEnabled, setIsSoundEnabled] = useState<boolean>(() => {
+    return soundFx.getPreference() !== 'disabled';
+  });
   const [isConfigOpen, setIsConfigOpen] = useState(false);
   const [isSimulatorOpen, setIsSimulatorOpen] = useState(false);
-  const [isEvaluationConcluded, setIsEvaluationConcluded] = useState(false);
 
   // Admin Security Clearance & Authentication State
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => isSessionAuthenticated());
@@ -39,9 +60,35 @@ export const App: React.FC = () => {
 
   const teamsRef = useRef(teams);
   teamsRef.current = teams;
+  const heroRef = useRef<HTMLDivElement | null>(null);
+  const podiumRef = useRef<HTMLDivElement | null>(null);
+  const tableRef = useRef<HTMLDivElement | null>(null);
+
+  // Smooth Scroll Tracker
+  useEffect(() => {
+    let ticking = false;
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const scrollY = window.scrollY || window.pageYOffset || 0;
+          const heroHeight = window.innerHeight * 0.85 || 650;
+          const progress = Math.min(1, Math.max(0, scrollY / heroHeight));
+          setScrollProgress(progress);
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     soundFx.isMuted = !isSoundEnabled;
+    if (!isSoundEnabled) {
+      soundFx.stopAmbientHum();
+    }
   }, [isSoundEnabled]);
 
   const performSync = useCallback(async () => {
@@ -83,6 +130,12 @@ export const App: React.FC = () => {
     return () => clearInterval(interval);
   }, [dataSource, sheetConfig, performSync]);
 
+  const handleBootComplete = (withSound: boolean) => {
+    setIsSoundEnabled(withSound);
+    soundFx.setPreference(withSound);
+    setIsBootCompleted(true);
+  };
+
   const handleUpdateTeamsFromSimulator = (newTeams: Team[]) => {
     const hasRankChange = newTeams.some(t => t.rankChange !== 0);
     if (hasRankChange && isSoundEnabled) {
@@ -96,6 +149,22 @@ export const App: React.FC = () => {
     setTeams(INITIAL_TEAMS);
     setConnectionState('LIVE');
     setLastSyncTimestamp(Date.now());
+  };
+
+  const handleScrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleScrollToPodium = () => {
+    if (podiumRef.current) {
+      podiumRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const handleScrollToTable = () => {
+    if (tableRef.current) {
+      tableRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
   // Protected Feature Access Handlers
@@ -142,13 +211,29 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#07080b] text-white flex flex-col justify-between relative overflow-x-hidden font-['Times_New_Roman',Times,serif] select-none antialiased">
-      {/* 3D Spline / Procedural Light Shafts Background */}
-      <SplineBackground isSplineEnabled={isSplineEnabled} />
+    <div className="min-h-screen w-full bg-[#050505] text-[#fafafa] flex flex-col justify-between relative overflow-x-hidden font-sans select-none antialiased">
+      {/* 1. Cinematic Terminal Boot Overlay */}
+      {!isBootCompleted && (
+        <TerminalBoot onComplete={handleBootComplete} />
+      )}
 
-      {/* Main UI Container */}
-      <div className="relative z-10 flex flex-col min-h-screen">
-        {/* Top Header */}
+      {/* 2. Full-Bleed CloudFront Cinematic Video Background Plane (Behind 2D Live Leaderboard) */}
+      <CinematicVideoBackground
+        scrollProgress={scrollProgress}
+      />
+
+      {/* 3. Minimal Left Vertical Command Rail */}
+      <LeftCommandRail
+        onScrollToTop={handleScrollToTop}
+        onScrollToPodium={handleScrollToPodium}
+        onScrollToTable={handleScrollToTable}
+        onOpenSimulator={handleOpenSimulator}
+        onOpenConfig={handleOpenConfig}
+      />
+
+      {/* 4. Main Dashboard UI Container */}
+      <div className="relative z-10 flex flex-col min-h-screen lg:pl-16">
+        {/* Top Header with Navigation Tabs, Telemetry & Sound Controls */}
         <Header
           connectionState={connectionState}
           lastSyncTimestamp={lastSyncTimestamp}
@@ -158,75 +243,72 @@ export const App: React.FC = () => {
           onOpenSimulator={handleOpenSimulator}
           onManualRefresh={performSync}
           dataSource={dataSource}
-          isEvaluationConcluded={isEvaluationConcluded}
-          onToggleEvaluationConcluded={setIsEvaluationConcluded}
           isAuthenticated={isAuthenticated}
           onToggleAuthLock={handleLockSession}
+          onScrollToTop={handleScrollToTop}
+          onScrollToPodium={handleScrollToPodium}
+          onScrollToTable={handleScrollToTable}
         />
 
-        {/* HUD & Hero Section */}
-        <div className="w-full max-w-7xl mx-auto px-4 pt-2">
-          <TelemetryHUD round="RND 4" isEvaluationConcluded={isEvaluationConcluded} />
-        </div>
-
-        {/* Podium Stage: Clean 2D Stepped Podium by Default (Live Mode), or 3D Stadium Ceremony when Evaluation is Concluded */}
-        {!isEvaluationConcluded ? (
-          <Podium teams={teams} />
-        ) : (
-          <div className="w-full flex flex-col items-center">
-            {/* 3D WebGL Hero Podium Presentation Stage */}
-            <Hero3D
-              teams={teams.map(t => ({
-                id: t.id,
-                name: t.teamName,
-                institution: t.institutionCode || t.institution,
-                score: t.score,
-                rankDelta: t.rankChange,
-                logoUrl: t.logoUrl || t.logo || '',
-                metric: t.metricLabel,
-              }))}
-              quality="auto"
-              background="#07080b"
-              onOvertake={() => {
-                if (isSoundEnabled) soundFx.playRankUp();
-              }}
-              renderFallback={() => <Podium teams={teams} />}
+        {/* 5. PRIMARY CONTENT STAGE: Live Cinematic Hero + Top 3 Spotlight Podium */}
+        <div className="w-full flex flex-col">
+          {/* Full-Screen Hero */}
+          <div ref={heroRef} className="w-full">
+            <HeroCinematicSection
+              scrollProgress={scrollProgress}
+              onScrollToTable={handleScrollToTable}
+              onOpenSimulator={handleOpenSimulator}
+              onOpenConfig={handleOpenConfig}
             />
+          </div>
 
-            {/* Scroll Down Prompt to View Other Team Final Positions */}
-            <div 
-              className="w-full flex flex-col items-center justify-center my-3 cursor-pointer group"
-              onClick={() => {
-                window.scrollBy({ top: 560, behavior: 'smooth' });
-              }}
-            >
-              <div className="flex items-center gap-2 px-5 py-2 rounded-full border border-[#f59e0b]/40 bg-[#0d1017]/90 hover:border-[#f59e0b] hover:bg-[#161b26] text-xs font-bold tracking-[0.2em] text-[#f59e0b] uppercase shadow-[0_0_15px_rgba(245,158,11,0.2)] transition-all duration-300">
-                <span className="animate-bounce">▼</span>
-                <span>SCROLL TO VIEW OTHER TEAM FINAL POSITIONING (#4 — #10)</span>
-                <span className="animate-bounce">▼</span>
-              </div>
+          {/* Telemetry Status Bar */}
+          <div
+            ref={podiumRef}
+            className="w-full max-w-6xl mx-auto px-4 sm:px-8 pt-6 pb-3 flex items-center justify-between border-t border-white/[0.08] text-xs font-mono text-[#a7a6a6] tracking-wider"
+          >
+            <div className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-white animate-subtlePulse" />
+              <span className="text-white font-medium uppercase tracking-[0.2em]">
+                TELEMETRY ARENA // ROUND 04 ACTIVE
+              </span>
+            </div>
+
+            <div className="hidden sm:flex items-center gap-4 text-[11px] text-[#71717a]">
+              <span>28.6139° N, 77.2090° E</span>
+              <span>•</span>
+              <span className="text-[#a7a6a6]">STATUS: LIVE FEED</span>
             </div>
           </div>
-        )}
 
-        {/* Main Live / Final Leaderboard Table */}
-        <LeaderboardTable teams={teams} />
+          {/* Top 3 Cyber Spotlight Podium */}
+          <Podium teams={teams} onScrollToTable={handleScrollToTable} />
+        </div>
 
-        {/* Bottom System Bar */}
-        <div className="w-full py-2.5 px-6 border-t border-[#1c212c]/60 bg-[#07080b]/90 backdrop-blur-md flex flex-col sm:flex-row items-center justify-between text-xs text-[#6b7280]">
+        {/* 6. Main Flat Continuous Leaderboard Table */}
+        <div ref={tableRef} className="pt-2">
+          <LeaderboardTable teams={teams} />
+        </div>
+
+        {/* 7. Bottom System Telemetry Bar */}
+        <div className="w-full py-3 px-6 border-t border-white/[0.08] bg-[#050505]/90 backdrop-blur-md flex flex-col sm:flex-row items-center justify-between text-xs text-[#71717a]">
           <div className="flex items-center gap-3">
-            <span className="text-[#f59e0b]/80">● KINETICS 2026 AUTONOMOUS ROBOTICS DASHBOARD</span>
+            <span className="text-[#a7a6a6] font-mono">
+              ● {cinematicConfig.title.toUpperCase()}
+            </span>
             <span className="hidden md:inline">•</span>
-            <span className="hidden md:inline">SYSTEM STATUS: {isEvaluationConcluded ? 'EVALUATION CONCLUDED' : 'OPTIMAL'}</span>
+            <span className="hidden md:inline">
+              STATUS: OPTIMAL
+            </span>
           </div>
-          <div className="flex items-center gap-4 mt-1 sm:mt-0">
+          <div className="flex items-center gap-4 mt-1 sm:mt-0 font-mono">
             <span>ENGINE: {dataSource.toUpperCase()}</span>
             <span>POLL: {sheetConfig.pollIntervalMs}ms</span>
-            <span>MODE: {isEvaluationConcluded ? '3D CEREMONY' : 'LIVE DASHBOARD'}</span>
+            <span>MODE: 2D LIVE DASHBOARD</span>
           </div>
         </div>
 
-        {/* Official Kinetic Robotics Club Institutional Footer */}
+        {/* 8. Official Footer */}
         <Footer />
       </div>
 
@@ -245,8 +327,6 @@ export const App: React.FC = () => {
         onToggleSpline={setIsSplineEnabled}
         isSoundEnabled={isSoundEnabled}
         onToggleSound={setIsSoundEnabled}
-        isEvaluationConcluded={isEvaluationConcluded}
-        onToggleEvaluationConcluded={setIsEvaluationConcluded}
         onLockSession={handleLockSession}
       />
 
@@ -259,8 +339,6 @@ export const App: React.FC = () => {
         onResetTeams={handleResetToDefault}
         connectionState={connectionState}
         onSetConnectionState={setConnectionState}
-        isEvaluationConcluded={isEvaluationConcluded}
-        onToggleEvaluationConcluded={setIsEvaluationConcluded}
         onLockSession={handleLockSession}
       />
 

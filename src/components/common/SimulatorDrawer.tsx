@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Play, Shuffle, Zap, WifiOff, Wifi, RotateCcw, Trophy, Database, Lock } from 'lucide-react';
+import { X, Play, Shuffle, Zap, WifiOff, Wifi, RotateCcw, Database, Lock } from 'lucide-react';
 import { Team, ConnectionState } from '../../types/leaderboard';
 import { HACKATHON_SHEET_DATASET_TEAMS } from '../../services/mockData';
 
@@ -11,8 +11,6 @@ interface SimulatorDrawerProps {
   onResetTeams: () => void;
   connectionState: ConnectionState;
   onSetConnectionState: (state: ConnectionState) => void;
-  isEvaluationConcluded?: boolean;
-  onToggleEvaluationConcluded?: (concluded: boolean) => void;
   onLockSession?: () => void;
 }
 
@@ -24,8 +22,6 @@ export const SimulatorDrawer: React.FC<SimulatorDrawerProps> = ({
   onResetTeams,
   connectionState,
   onSetConnectionState,
-  isEvaluationConcluded = false,
-  onToggleEvaluationConcluded,
   onLockSession,
 }) => {
   if (!isOpen) return null;
@@ -93,13 +89,13 @@ export const SimulatorDrawer: React.FC<SimulatorDrawerProps> = ({
   };
 
   return (
-    <div className="fixed inset-y-0 right-0 z-50 w-80 sm:w-96 bg-[#0c0f16] border-l border-[#f59e0b]/40 shadow-[-10px_0_30px_rgba(0,0,0,0.8)] flex flex-col justify-between animate-slideLeft select-none font-['Times_New_Roman',Times,serif]">
+    <div className="fixed inset-y-0 right-0 z-50 w-80 sm:w-96 bg-[#0a0a0a] border-l border-white/15 shadow-[-20px_0_50px_rgba(0,0,0,0.9)] flex flex-col justify-between animate-slideLeft select-none font-sans">
       {/* Drawer Header */}
-      <div className="px-5 py-4 border-b border-[#1f293d] flex items-center justify-between bg-[#111622]">
+      <div className="px-5 py-4.5 border-b border-white/10 flex items-center justify-between bg-white/[0.02]">
         <div className="flex items-center gap-2">
-          <Zap className="w-4 h-4 text-[#f59e0b]" />
-          <h3 className="text-base font-bold text-white uppercase">
-            Live Event Simulator
+          <Zap className="w-4 h-4 text-white" />
+          <h3 className="text-base font-semibold text-white uppercase tracking-wider">
+            Live Simulator
           </h3>
         </div>
         <div className="flex items-center gap-2">
@@ -126,47 +122,8 @@ export const SimulatorDrawer: React.FC<SimulatorDrawerProps> = ({
       {/* Drawer Body */}
       <div className="p-5 space-y-4 overflow-y-auto flex-1">
         <p className="text-xs text-[#9ca3af] leading-relaxed">
-          Use these command controls to test real-time rank transitions, score count-ups, sound triggers, and final 3D podium reveals.
+          Use these command controls to test real-time rank transitions, score count-ups, sound triggers, and live data synchronization.
         </p>
-
-        {/* Feature: Evaluation End & 3D Final Reveal */}
-        <div className="p-3.5 bg-gradient-to-b from-[#1a1510] to-[#111622] rounded-lg border border-[#f59e0b]/60 space-y-2.5 shadow-[0_0_16px_rgba(245,158,11,0.15)]">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-[#f59e0b] uppercase tracking-wider flex items-center gap-1.5">
-              <Trophy className="w-4 h-4 text-[#f59e0b]" /> Competition Evaluation
-            </span>
-            <span className={`text-[10px] px-2 py-0.5 rounded font-black uppercase ${isEvaluationConcluded ? 'bg-[#f59e0b] text-black shadow-[0_0_10px_#f59e0b]' : 'bg-[#22c55e]/20 text-[#4ade80] border border-[#22c55e]/40'}`}>
-              {isEvaluationConcluded ? '3D CEREMONY' : 'LIVE 2D'}
-            </span>
-          </div>
-          <p className="text-[11px] text-[#9ca3af] leading-relaxed">
-            {isEvaluationConcluded
-              ? 'Evaluation ended. Final rankings are active on the 3D stadium stage.'
-              : 'Evaluation in progress. Click to lock final rankings and launch 3D podium stage.'}
-          </p>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              onClick={() => onToggleEvaluationConcluded?.(true)}
-              className={`py-2 px-2.5 rounded border text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
-                isEvaluationConcluded
-                  ? 'bg-[#f59e0b] text-black border-[#f59e0b] shadow-[0_0_12px_#f59e0b]'
-                  : 'bg-[#f59e0b]/15 text-[#f59e0b] border-[#f59e0b]/50 hover:bg-[#f59e0b]/30'
-              }`}
-            >
-              <Trophy className="w-3.5 h-3.5" /> End & Reveal 3D
-            </button>
-            <button
-              onClick={() => onToggleEvaluationConcluded?.(false)}
-              className={`py-2 px-2.5 rounded border text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
-                !isEvaluationConcluded
-                  ? 'bg-[#22c55e]/25 text-[#4ade80] border-[#22c55e]'
-                  : 'bg-[#1f2937] text-[#9ca3af] border-[#374151] hover:text-white'
-              }`}
-            >
-              <RotateCcw className="w-3.5 h-3.5" /> Live 2D Mode
-            </button>
-          </div>
-        </div>
 
         {/* Action 1: Random Score Boost */}
         <div className="p-3 bg-[#111622] rounded-lg border border-[#1f293d] space-y-2">

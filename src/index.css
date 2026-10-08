@@ -1,85 +1,139 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --font-orbitron: 'Times New Roman', Times, serif;
-  --font-rajdhani: 'Times New Roman', Times, serif;
-  --font-mono: 'Times New Roman', Times, serif;
-  --font-sans: 'Times New Roman', Times, serif;
-  font-family: 'Times New Roman', Times, serif;
+  --ink: #ffffff;
+  --muted: #cbd5e1;
+  --nav: #e2e8f0;
+  --strip: #94a3b8;
+
+  --stage: #050505;
+  --surface: #0a0a0a;
+  --surface-2: #101010;
+
+  --line: rgba(255, 255, 255, 0.15);
+  --line-strong: rgba(255, 255, 255, 0.25);
+
+  --pill: #ffffff;
+  --pill-ink: #050505;
+
+  --rank-gold: #f59e0b;
+  --rank-silver: #38bdf8;
+  --rank-bronze: #f97316;
+
+  font-family: 'Manrope', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  text-rendering: geometricPrecision;
+  -webkit-font-smoothing: antialiased;
 }
 
-*, *::before, *::after {
-  font-family: 'Times New Roman', Times, serif !important;
+html, body, #root {
+  font-family: 'Manrope', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+*, ::before, ::after {
+  font-family: 'Manrope', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+code, kbd, samp, pre, .font-mono, [class*="font-mono"] {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
 }
 
 body {
   margin: 0;
   padding: 0;
-  background-color: #07080b;
+  background-color: #050505;
   color: #ffffff;
-  font-family: 'Times New Roman', Times, serif !important;
   overflow-x: hidden;
   user-select: none;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Custom Scrollbars */
+/* Custom Minimal Scrollbars */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
+
 ::-webkit-scrollbar-track {
-  background: #090b10;
+  background: #050505;
 }
+
 ::-webkit-scrollbar-thumb {
-  background: #2a3142;
-  border-radius: 3px;
+  background: #262626;
+  border-radius: 999px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
-  background: #f59e0b;
+  background: #404040;
+}
+
+/* Table Tabular Numerals */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
 }
 
 /* Scanlines Texture */
 .bg-scanlines {
-  background: linear-gradient(
-    rgba(18, 16, 16, 0) 50%,
-    rgba(0, 0, 0, 0.25) 50%
-  ), linear-gradient(
-    90deg,
-    rgba(255, 0, 0, 0.02),
-    rgba(0, 255, 0, 0.01),
-    rgba(0, 0, 255, 0.02)
-  );
-  background-size: 100% 3px, 6px 100%;
+  background: linear-gradient(rgba(255, 255, 255, 0.015) 50%, rgba(0, 0, 0, 0.25) 50%);
+  background-size: 100% 3px;
 }
 
-/* Radial Vignette */
-.bg-radial-vignette {
-  background: radial-gradient(
-    circle at center,
-    transparent 40%,
-    rgba(7, 8, 11, 0.85) 90%,
-    #07080b 100%
-  );
-}
-
-/* Animations */
+/* Animations with Smooth Cinematic Easing */
 @keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.97); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes slideLeft {
-  from { transform: translateX(100%); }
-  to { transform: translateX(0); }
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes subtlePulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(0.96);
+  }
 }
 
 .animate-fadeIn {
-  animation: fadeIn 0.25s ease-out forwards;
+  animation: fadeIn 0.4s cubic-bezier(.22, 1, .36, 1) forwards;
 }
 
 .animate-slideLeft {
-  animation: slideLeft 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: slideLeft 0.3s cubic-bezier(.22, 1, .36, 1) forwards;
+}
+
+.animate-subtlePulse {
+  animation: subtlePulse 2.4s infinite cubic-bezier(.22, 1, .36, 1);
+}
+
+/* Prefers-reduced-motion accessibility support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

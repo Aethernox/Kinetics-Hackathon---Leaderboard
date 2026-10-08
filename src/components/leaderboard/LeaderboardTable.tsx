@@ -7,32 +7,30 @@ interface LeaderboardTableProps {
 }
 
 export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({ teams }) => {
-  const tableTeams = teams.filter(t => t.rank > 3);
-
   return (
-    <div className="w-full max-w-6xl mx-auto px-4 pb-12 select-none relative z-10 font-['Times_New_Roman',Times,serif]">
-      {/* Table Container */}
-      <div className="w-full rounded-xl border border-[#2d2218]/90 bg-[#090b10]/85 backdrop-blur-md shadow-[0_12px_40px_rgba(0,0,0,0.7)] overflow-hidden">
-        {/* Table Header Row in Proper Case & Times New Roman */}
-        <div className="grid grid-cols-12 items-center px-4 sm:px-6 py-3.5 border-b border-[#2d2218] bg-gradient-to-r from-[#171310] via-[#120f0d] to-[#171310] text-xs sm:text-sm font-bold tracking-[0.05em] text-[#d1d5db]">
+    <div className="w-full max-w-6xl mx-auto px-4 sm:px-8 pb-16 select-none relative z-10 font-sans">
+      {/* Table Container: Flat Surface with Hairline Borders */}
+      <div className="w-full rounded-2xl border border-white/[0.08] bg-[#0a0a0a]/60 backdrop-blur-xl overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.7)]">
+        {/* Table Column Headers */}
+        <div className="grid grid-cols-12 items-center px-4 sm:px-8 py-4 border-b border-white/[0.10] bg-white/[0.02] text-[11px] sm:text-xs font-medium tracking-[0.2em] uppercase text-[#a7a6a6]">
           <div className="col-span-2 sm:col-span-1 text-left">
             Rank
           </div>
 
           <div className="col-span-6 sm:col-span-4 text-left">
-            Team / Institution
+            Team / Participant
           </div>
 
           <div className="col-span-4 sm:col-span-2 text-right sm:text-left">
-            Round Score
+            Score
           </div>
 
           <div className="hidden sm:block sm:col-span-3 text-left">
-            Metrics / Gain
+            Telemetry / Metrics
           </div>
 
           <div className="hidden sm:block sm:col-span-1 text-center">
-            Rank Change
+            Delta
           </div>
 
           <div className="hidden sm:block sm:col-span-1 text-right">
@@ -40,10 +38,10 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({ teams }) => 
           </div>
         </div>
 
-        {/* Table Body: List of Team Rows */}
-        <div className="divide-y divide-[#181c26]/60">
-          {tableTeams.length > 0 ? (
-            tableTeams.map((team, idx) => (
+        {/* Table Rows */}
+        <div className="divide-y divide-white/[0.06]">
+          {teams.length > 0 ? (
+            teams.map((team, idx) => (
               <LeaderboardRow
                 key={team.id || `team-${team.rank}-${team.teamName}`}
                 team={team}
@@ -51,8 +49,8 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({ teams }) => 
               />
             ))
           ) : (
-            <div className="py-12 text-center text-base text-[#9ca3af]">
-              No additional teams in data feed
+            <div className="py-16 text-center text-sm text-[#71717a]">
+              No active data feeds detected
             </div>
           )}
         </div>
@@ -60,3 +58,4 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({ teams }) => 
     </div>
   );
 };
+

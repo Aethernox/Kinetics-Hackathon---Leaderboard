@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { Team } from '../../types/leaderboard';
-import { ArrowDown } from 'lucide-react';
 import { toProperCase } from '../../utils/text';
 
 interface PodiumCardProps {
@@ -16,7 +15,7 @@ export const PodiumCard: React.FC<PodiumCardProps> = ({ team, rankPosition }) =>
     const endScore = team.score;
     if (startScore === endScore) return;
 
-    const duration = 1200;
+    const duration = 800;
     const startTime = performance.now();
 
     const animateNumber = (currentTime: number) => {
@@ -37,186 +36,132 @@ export const PodiumCard: React.FC<PodiumCardProps> = ({ team, rankPosition }) =>
   const isFirst = rankPosition === 1;
   const isSecond = rankPosition === 2;
 
+  // 2D Cyber-Esports Theme (Gold Champion, Ice Silver, Copper Bronze)
   const theme = isFirst
     ? {
-        border: 'border-[#f59e0b]/80 shadow-[0_0_25px_rgba(245,158,11,0.25)]',
-        bg: 'bg-gradient-to-b from-[#2a1d0d]/90 via-[#181410]/95 to-[#0e0c0a]/95',
-        badgeColor: 'text-[#fbbf24]',
-        rankText: '1st',
-        accentGlow: 'from-[#f59e0b]/30 via-transparent to-transparent',
+        border: 'border-[#f59e0b] shadow-[0_0_35px_rgba(245,158,11,0.25)]',
+        bg: 'bg-gradient-to-b from-[#18140e]/95 via-[#0e0c08]/95 to-[#070604]/98',
+        secText: 'SEC // 01',
+        badge: '👑 1ST PLACE • CHAMPION',
+        badgeClass:
+          'bg-gradient-to-r from-[#fbbf24] via-[#f59e0b] to-[#d97706] text-black font-black shadow-[0_0_15px_rgba(245,158,11,0.5)]',
+        accentGlow: 'bg-gradient-to-r from-transparent via-[#f59e0b] to-transparent',
+        dotColor: 'bg-[#f59e0b] shadow-[0_0_8px_#f59e0b]',
+        instColor: 'text-[#fde68a]',
+        scoreColor: 'text-white',
+        barShadow: 'shadow-[0_0_16px_#f59e0b]',
+        heightClass: 'md:h-[220px]',
+        rankBoxBorder: 'border-[#f59e0b]/40 text-[#fde68a]',
       }
     : isSecond
     ? {
-        border: 'border-[#94a3b8]/70 shadow-[0_0_20px_rgba(148,163,184,0.15)]',
-        bg: 'bg-gradient-to-b from-[#1e293b]/90 via-[#0f172a]/95 to-[#090d16]/95',
-        badgeColor: 'text-[#e2e8f0]',
-        rankText: '2nd',
-        accentGlow: 'from-[#94a3b8]/25 via-transparent to-transparent',
+        border: 'border-[#38bdf8]/70 shadow-[0_0_25px_rgba(56,189,248,0.2)]',
+        bg: 'bg-gradient-to-b from-[#0e1622]/95 via-[#090d16]/95 to-[#05080e]/98',
+        secText: 'SEC // 02',
+        badge: '🥈 2ND PLACE',
+        badgeClass:
+          'bg-gradient-to-r from-[#e2e8f0] via-[#94a3b8] to-[#64748b] text-black font-extrabold shadow-[0_0_12px_rgba(148,163,184,0.4)]',
+        accentGlow: 'bg-gradient-to-r from-transparent via-[#38bdf8] to-transparent',
+        dotColor: 'bg-[#38bdf8] shadow-[0_0_8px_#38bdf8]',
+        instColor: 'text-[#93c5fd]',
+        scoreColor: 'text-white',
+        barShadow: 'shadow-[0_0_14px_#38bdf8]',
+        heightClass: 'md:h-[200px]',
+        rankBoxBorder: 'border-[#38bdf8]/40 text-[#93c5fd]',
       }
     : {
-        border: 'border-[#ea580c]/70 shadow-[0_0_20px_rgba(234,88,12,0.18)]',
-        bg: 'bg-gradient-to-b from-[#2d150b]/90 via-[#1a0e07]/95 to-[#0c0603]/95',
-        badgeColor: 'text-[#fdba74]',
-        rankText: '3rd',
-        accentGlow: 'from-[#ea580c]/25 via-transparent to-transparent',
+        border: 'border-[#f97316]/70 shadow-[0_0_25px_rgba(249,115,22,0.25)]',
+        bg: 'bg-gradient-to-b from-[#1a110b]/95 via-[#110a06]/95 to-[#090503]/98',
+        secText: 'SEC // 03',
+        badge: '🥉 3RD PLACE',
+        badgeClass:
+          'bg-gradient-to-r from-[#fb923c] via-[#ea580c] to-[#c2410c] text-white font-extrabold shadow-[0_0_12px_rgba(234,88,12,0.4)]',
+        accentGlow: 'bg-gradient-to-r from-transparent via-[#f97316] to-transparent',
+        dotColor: 'bg-[#f97316] shadow-[0_0_8px_#f97316]',
+        instColor: 'text-[#fed7aa]',
+        scoreColor: 'text-white',
+        barShadow: 'shadow-[0_0_14px_#f97316]',
+        heightClass: 'md:h-[200px]',
+        rankBoxBorder: 'border-[#f97316]/40 text-[#fed7aa]',
       };
 
   return (
     <div
-      className={`relative flex flex-col justify-between transition-all duration-700 ease-out select-none font-['Times_New_Roman',Times,serif]
-        ${isFirst ? 'w-full md:w-[360px] lg:w-[410px] h-[210px] md:h-[225px] z-20 order-1 md:order-2' : ''}
-        ${isSecond ? 'w-full md:w-[310px] lg:w-[350px] h-[185px] md:h-[195px] z-10 order-2 md:order-1 self-end' : ''}
-        ${!isFirst && !isSecond ? 'w-full md:w-[310px] lg:w-[350px] h-[185px] md:h-[195px] z-10 order-3 md:order-3 self-end' : ''}
+      className={`relative flex flex-col items-center justify-between transition-all duration-300 select-none font-sans
+        ${isFirst ? 'w-full md:w-[360px] lg:w-[390px] z-20 order-1 md:order-2 -translate-y-1' : ''}
+        ${isSecond ? 'w-full md:w-[310px] lg:w-[340px] z-10 order-2 md:order-1 self-end' : ''}
+        ${!isFirst && !isSecond ? 'w-full md:w-[310px] lg:w-[340px] z-10 order-3 md:order-3 self-end' : ''}
       `}
     >
-      {/* Outer Chamfered Container with metallic beveling */}
+      {/* Outer Card with Cyber Cut Borders & Atmospheric Glow */}
       <div
-        className={`w-full h-full relative rounded-lg border ${theme.border} ${theme.bg} p-4 md:p-5 flex flex-col justify-between overflow-hidden backdrop-blur-md`}
-        style={{
-          clipPath: isFirst
-            ? 'polygon(0 0, calc(100% - 24px) 0, 100% 24px, 100% 100%, 24px 100%, 0 calc(100% - 24px))'
-            : isSecond
-            ? 'polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 0 100%)'
-            : 'polygon(0 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%)',
-        }}
+        className={`w-full ${theme.heightClass} relative rounded-xl border ${theme.border} ${theme.bg} p-5 flex flex-col justify-between overflow-hidden backdrop-blur-2xl transition-all duration-200 hover:scale-[1.01]`}
       >
-        {/* Top ambient highlight glow */}
-        <div className={`absolute -top-12 -left-12 -right-12 h-24 bg-gradient-to-b ${theme.accentGlow} pointer-events-none`} />
+        {/* Top Header: Section Tag + Centered Championship Badge + System Status */}
+        <div className="flex items-center justify-between relative w-full mb-1">
+          <span className="text-[10px] font-mono tracking-widest text-[#71717a] font-bold">
+            {theme.secText}
+          </span>
 
-        {/* Top Section: Team Logo + Names & Rank Badge + Rank Change */}
-        <div className="relative flex items-start justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div
-              className="relative flex-shrink-0 w-12 h-12 md:w-14 md:h-14 rounded-full border border-white/20 bg-black/60 flex items-center justify-center shadow-inner overflow-hidden"
-            >
-              {team.logo ? (
-                <img src={team.logo} alt={team.teamName} className="w-full h-full object-cover" />
-              ) : isFirst ? (
-                <svg viewBox="0 0 100 100" className="w-8 h-8 md:w-9 md:h-9">
-                  <defs>
-                    <linearGradient id="aetherGold" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#fef08a" />
-                      <stop offset="50%" stopColor="#f59e0b" />
-                      <stop offset="100%" stopColor="#b45309" />
-                    </linearGradient>
-                  </defs>
-                  <polygon points="50,15 88,80 12,80" fill="none" stroke="url(#aetherGold)" strokeWidth="8" strokeLinejoin="round" />
-                  <polygon points="50,38 72,75 28,75" fill="url(#aetherGold)" />
-                </svg>
-              ) : isSecond ? (
-                <svg viewBox="0 0 100 100" className="w-8 h-8 md:w-9 md:h-9">
-                  <defs>
-                    <linearGradient id="cyberSilver" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#ffffff" />
-                      <stop offset="50%" stopColor="#94a3b8" />
-                      <stop offset="100%" stopColor="#475569" />
-                    </linearGradient>
-                  </defs>
-                  <circle cx="50" cy="50" r="35" fill="none" stroke="url(#cyberSilver)" strokeWidth="5" strokeDasharray="14 6" />
-                  <circle cx="50" cy="50" r="16" fill="none" stroke="url(#cyberSilver)" strokeWidth="4" />
-                  <circle cx="50" cy="20" r="6" fill="url(#cyberSilver)" />
-                  <circle cx="76" cy="65" r="6" fill="url(#cyberSilver)" />
-                  <circle cx="24" cy="65" r="6" fill="url(#cyberSilver)" />
-                </svg>
-              ) : (
-                <svg viewBox="0 0 100 100" className="w-8 h-8 md:w-9 md:h-9">
-                  <defs>
-                    <linearGradient id="neuralBronze" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#fed7aa" />
-                      <stop offset="50%" stopColor="#ea580c" />
-                      <stop offset="100%" stopColor="#7c2d12" />
-                    </linearGradient>
-                  </defs>
-                  <path
-                    d="M 50,20 C 30,20 20,35 20,50 C 20,68 35,80 50,80 C 65,80 80,68 80,50 C 80,35 70,20 50,20 Z"
-                    fill="none"
-                    stroke="url(#neuralBronze)"
-                    strokeWidth="4"
-                  />
-                  <line x1="30" y1="40" x2="70" y2="60" stroke="url(#neuralBronze)" strokeWidth="2" strokeDasharray="3 2" />
-                  <line x1="30" y1="60" x2="70" y2="40" stroke="url(#neuralBronze)" strokeWidth="2" strokeDasharray="3 2" />
-                  <circle cx="35" cy="45" r="4" fill="url(#neuralBronze)" />
-                  <circle cx="65" cy="45" r="4" fill="url(#neuralBronze)" />
-                  <circle cx="50" cy="60" r="5" fill="url(#neuralBronze)" />
-                </svg>
-              )}
-            </div>
-
-            <div className="flex flex-col">
-              <h3
-                className={`font-bold tracking-wide text-white leading-tight ${
-                  isFirst ? 'text-lg md:text-xl' : 'text-base md:text-lg'
-                }`}
-              >
-                {toProperCase(team.teamName)}
-              </h3>
-              <span className="text-xs font-semibold tracking-wider text-[#9ca3af]">
-                {toProperCase(team.institutionCode || team.institution)}
-              </span>
-            </div>
-          </div>
-
-          <div className="flex flex-col items-end">
+          {/* Championship Rank Badge */}
+          <div className="absolute left-1/2 -translate-x-1/2 top-0">
             <span
-              className={`font-black tracking-wider leading-none ${
-                isFirst ? 'text-2xl md:text-3xl' : 'text-xl md:text-2xl'
-              } ${theme.badgeColor}`}
+              className={`text-[10px] sm:text-[11px] tracking-[0.16em] uppercase px-3 py-0.5 rounded-full whitespace-nowrap ${theme.badgeClass}`}
             >
-              {theme.rankText}
+              {theme.badge}
             </span>
-
-            <div className="flex items-center gap-0.5 mt-1 text-sm font-bold">
-              {team.rankChange > 0 ? (
-                <span className="text-[#f59e0b] flex items-center">
-                  +{team.rankChange}
-                </span>
-              ) : team.rankChange < 0 ? (
-                <span className="text-[#ef4444] flex items-center">
-                  <ArrowDown className="w-3.5 h-3.5 inline" /> {team.rankChange}
-                </span>
-              ) : (
-                <span className="text-[#9ca3af] flex items-center">
-                  +0
-                </span>
-              )}
-            </div>
           </div>
+
+          <span className="text-[10px] font-mono tracking-widest text-[#71717a] font-bold">
+            SYS.RDY
+          </span>
         </div>
 
-        {/* Center/Bottom Score Typography */}
-        <div className="relative mt-2">
-          <div className="flex items-baseline gap-1.5">
-            <span
-              className={`font-black tracking-tight text-white ${
-                isFirst ? 'text-3xl md:text-4xl lg:text-5xl' : 'text-2xl md:text-3xl lg:text-4xl'
-              }`}
-            >
+        {/* Center: Team Name & Institution */}
+        <div className="flex flex-col items-center text-center my-auto pt-2">
+          <h3 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight truncate max-w-full drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)]">
+            {toProperCase(team.teamName)}
+          </h3>
+          <span className={`text-xs font-semibold tracking-normal truncate mt-0.5 ${theme.instColor}`}>
+            {toProperCase(team.institutionCode || team.institution)}
+          </span>
+
+          {/* Large Heroic Score */}
+          <div className="flex items-baseline gap-1.5 mt-2 tabular-nums">
+            <span className="text-3xl sm:text-4xl font-black text-white tracking-tight drop-shadow-[0_4px_16px_rgba(0,0,0,0.9)]">
               {displayScore.toLocaleString()}
             </span>
-            <span className="text-sm font-bold tracking-wider text-[#9ca3af] uppercase">
+            <span className="text-xs font-extrabold text-[#a1a1aa] uppercase tracking-wider">
               pts
             </span>
           </div>
         </div>
 
-        {/* Card Footer */}
-        <div className="relative mt-2 pt-2 border-t border-white/10 flex items-center justify-between text-xs text-[#9ca3af]">
-          <span className="truncate pr-2">
-            {team.metricLabel || `${team.round || 'RND 4'} / LiDAR accuracy: 98.4%`}
-          </span>
+        {/* Bottom Metrics Row: Task Info + Delta Tag */}
+        <div className="flex items-center justify-between pt-2.5 border-t border-white/10 mt-1 text-[11px]">
+          {/* Telemetry Metric / Tasks */}
+          <div className="flex items-center gap-1.5 min-w-0 pr-2">
+            <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${theme.dotColor}`} />
+            <span className="text-[#d1d5db] font-medium tracking-tight truncate">
+              {team.metricLabel || 'Autonomous Telemetry Feed'}
+            </span>
+          </div>
 
-          <div className="flex items-center gap-1 flex-shrink-0">
-            <div className="grid grid-cols-3 gap-0.5 opacity-70">
-              <span className={`w-1.5 h-1.5 rounded-full ${isFirst ? 'bg-[#f59e0b]' : isSecond ? 'bg-[#cbd5e1]' : 'bg-[#ea580c]'}`} />
-              <span className={`w-1.5 h-1.5 rounded-full ${isFirst ? 'bg-[#f59e0b]' : isSecond ? 'bg-[#cbd5e1]' : 'bg-[#ea580c]'}`} />
-              <span className={`w-1.5 h-1.5 rounded-full ${isFirst ? 'bg-[#f59e0b]' : isSecond ? 'bg-[#cbd5e1]' : 'bg-[#ea580c]'}`} />
-              <span className={`w-1.5 h-1.5 rounded-full ${isFirst ? 'bg-[#f59e0b]' : isSecond ? 'bg-[#cbd5e1]' : 'bg-[#ea580c]'}`} />
-              <span className={`w-1.5 h-1.5 rounded-full ${isFirst ? 'bg-[#f59e0b]' : isSecond ? 'bg-[#cbd5e1]' : 'bg-[#ea580c]'}`} />
-              <span className={`w-1.5 h-1.5 rounded-full ${isFirst ? 'bg-[#f59e0b]' : isSecond ? 'bg-[#cbd5e1]' : 'bg-[#ea580c]'}`} />
-            </div>
+          {/* Cyber Rank Tag Box */}
+          <div className={`px-2 py-0.5 rounded border text-[10px] font-mono font-bold flex-shrink-0 ${theme.rankBoxBorder} bg-black/40`}>
+            {team.rankChange > 0 ? (
+              <span className="text-emerald-400">RANK ▲ +{team.rankChange}</span>
+            ) : team.rankChange < 0 ? (
+              <span className="text-rose-400">RANK ▼ {team.rankChange}</span>
+            ) : (
+              <span>RANK — 0</span>
+            )}
           </div>
         </div>
       </div>
+
+      {/* Cyber Underline Horizon Glow Bar Beneath the Podium Card */}
+      <div className={`w-3/4 h-1 rounded-full ${theme.accentGlow} mt-2.5 opacity-90 ${theme.barShadow}`} />
     </div>
   );
 };

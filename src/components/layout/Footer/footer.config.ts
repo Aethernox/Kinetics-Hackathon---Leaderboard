@@ -116,7 +116,7 @@ export const getSocialFooterConfig = (): FooterConfig => {
     brand: {
       clubName: 'KINETIC',
       tagline: 'INNOVATION IN MOTION',
-      logoSrc: 'logo.png',
+      logoSrc: '/logo.png',
       logoAlt: 'KINETIC Robotics Club Logo',
     },
     heading: 'CONNECT WITH US',

@@ -9,157 +9,97 @@ interface LeaderboardRowProps {
   isEven?: boolean;
 }
 
-export const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ team, isEven = false }) => {
-  const renderInstitutionLogo = () => {
-    if (team.logo) {
-      return (
-        <img
-          src={team.logo}
-          alt={team.institution}
-          className="w-8 h-8 rounded-full object-cover border border-white/20"
-        />
-      );
-    }
+export const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ team }) => {
+  const isFirst = team.rank === 1;
+  const isSecond = team.rank === 2;
+  const isThird = team.rank === 3;
 
-    const code = (team.institutionCode || team.institution).toUpperCase();
-
-    if (code.includes('MIT')) {
-      return (
-        <div className="w-8 h-8 rounded bg-[#800000]/30 border border-[#ef4444]/60 flex items-center justify-center text-[10px] font-black text-[#ef4444] font-['Times_New_Roman',Times,serif]">
-          MIT
-        </div>
-      );
-    }
-    if (code.includes('STANFORD')) {
-      return (
-        <div className="w-8 h-8 rounded-full bg-[#8c1515]/30 border border-[#f87171]/60 flex items-center justify-center text-xs font-black text-[#f87171] font-['Times_New_Roman',Times,serif]">
-          S
-        </div>
-      );
-    }
-    if (code.includes('IIT') || code.includes('DELHI')) {
-      return (
-        <div className="w-8 h-8 rounded-full bg-[#1e3a8a]/40 border border-[#60a5fa]/60 flex items-center justify-center text-[9px] font-black text-[#93c5fd] font-['Times_New_Roman',Times,serif]">
-          IIT
-        </div>
-      );
-    }
-    if (code.includes('CMU')) {
-      return (
-        <div className="w-8 h-8 rounded bg-[#990000]/40 border border-[#fca5a5]/60 flex items-center justify-center text-[9px] font-black text-[#fca5a5] font-['Times_New_Roman',Times,serif]">
-          CMU
-        </div>
-      );
-    }
-    if (code.includes('OXFORD')) {
-      return (
-        <div className="w-8 h-8 rounded-full bg-[#002147]/60 border border-[#93c5fd]/50 flex items-center justify-center text-[9px] font-bold text-[#bfdbfe] font-['Times_New_Roman',Times,serif]">
-          OXF
-        </div>
-      );
-    }
-    if (code.includes('TUM')) {
-      return (
-        <div className="w-8 h-8 rounded bg-[#0065BD]/40 border border-[#60a5fa]/60 flex items-center justify-center text-[9px] font-black text-[#60a5fa] font-['Times_New_Roman',Times,serif]">
-          TUM
-        </div>
-      );
-    }
-    if (code.includes('CALTECH')) {
-      return (
-        <div className="w-8 h-8 rounded-full bg-[#FF6C0C]/20 border border-[#fb923c]/70 flex items-center justify-center text-[10px] font-bold text-[#fb923c] font-['Times_New_Roman',Times,serif]">
-          CIT
-        </div>
-      );
-    }
-
-    return (
-      <div className="w-8 h-8 rounded-full bg-[#1f2937] border border-[#f59e0b]/40 flex items-center justify-center text-[10px] font-bold text-[#f59e0b] font-['Times_New_Roman',Times,serif]">
-        {code.slice(0, 3)}
-      </div>
-    );
+  // 2D Cyber-Rank typography hierarchy
+  const getRankStyle = () => {
+    if (isFirst) return 'text-[#f59e0b] font-black drop-shadow-[0_0_12px_rgba(245,158,11,0.5)]';
+    if (isSecond) return 'text-[#38bdf8] font-black drop-shadow-[0_0_10px_rgba(56,189,248,0.4)]';
+    if (isThird) return 'text-[#f97316] font-black drop-shadow-[0_0_10px_rgba(249,115,22,0.4)]';
+    return 'text-[#cbd5e1] font-bold';
   };
 
-  const getStatusStyle = () => {
-    switch (team.status) {
-      case 'CALCULATING...':
-        return 'text-[#f59e0b] animate-pulse';
-      case 'COOLDOWN':
-        return 'text-[#9ca3af] opacity-60';
-      case 'OFFLINE':
-      case 'DISQUALIFIED':
-        return 'text-[#ef4444]';
-      case 'ACTIVE':
-      default:
-        return 'text-[#f59e0b] font-semibold';
-    }
-  };
-
+  const formattedRank = team.rank < 10 ? `0${team.rank}` : `${team.rank}`;
   const formattedTeamName = toProperCase(team.teamName);
   const formattedInstitution = toProperCase(team.institution);
-  const formattedStatus = toProperCase(team.status);
 
   return (
     <div
-      className={`group relative grid grid-cols-12 items-center px-4 sm:px-6 py-3.5 border-b border-[#1c212c]/80 transition-all duration-300 font-['Times_New_Roman',Times,serif] ${
-        isEven ? 'bg-[#0a0c10]/70' : 'bg-[#0d1017]/70'
-      } hover:bg-[#151922] hover:border-[#f59e0b]/30`}
+      className={`group relative grid grid-cols-12 items-center px-4 sm:px-8 py-4 sm:py-5 border-b border-white/[0.08] transition-all duration-200 font-sans hover:bg-white/[0.04] ${
+        isFirst ? 'bg-[#f59e0b]/[0.03]' : isSecond ? 'bg-[#38bdf8]/[0.02]' : isThird ? 'bg-[#f97316]/[0.02]' : ''
+      }`}
     >
       {/* 1. RANK */}
-      <div className="col-span-2 sm:col-span-1 flex items-center">
-        <span className="text-lg sm:text-xl font-black text-white group-hover:text-[#f59e0b] transition-colors">
-          #{team.rank}
+      <div className="col-span-2 sm:col-span-1 flex items-baseline">
+        <span className={`text-xl sm:text-2xl tracking-tight font-mono ${getRankStyle()}`}>
+          {formattedRank}
         </span>
       </div>
 
-      {/* 2. TEAM & INSTITUTION in Proper Case */}
-      <div className="col-span-6 sm:col-span-4 flex items-center gap-3 pr-2">
-        <div className="flex-shrink-0">{renderInstitutionLogo()}</div>
-        <div className="flex flex-col min-w-0">
-          <span className="text-sm sm:text-base font-bold text-white tracking-wide truncate group-hover:text-[#f59e0b] transition-colors">
+      {/* 2. TEAM & INSTITUTION */}
+      <div className="col-span-6 sm:col-span-4 flex flex-col justify-center pr-2">
+        <div className="flex items-center gap-2">
+          <span className="text-sm sm:text-base font-bold text-[#ffffff] tracking-normal group-hover:text-white transition-colors truncate">
             {formattedTeamName}
           </span>
-          <span className="text-xs font-medium text-[#9ca3af] tracking-wide truncate">
-            {formattedInstitution}
-          </span>
+          {isFirst && (
+            <span className="text-[10px] font-black px-1.5 py-0.5 rounded bg-[#f59e0b] text-black tracking-wider uppercase shadow-[0_0_8px_#f59e0b]">
+              1ST
+            </span>
+          )}
+          {isSecond && (
+            <span className="text-[10px] font-black px-1.5 py-0.5 rounded bg-[#38bdf8] text-black tracking-wider uppercase shadow-[0_0_8px_#38bdf8]">
+              2ND
+            </span>
+          )}
+          {isThird && (
+            <span className="text-[10px] font-black px-1.5 py-0.5 rounded bg-[#f97316] text-white tracking-wider uppercase shadow-[0_0_8px_#f97316]">
+              3RD
+            </span>
+          )}
         </div>
+        <span className="text-xs text-[#94a3b8] font-medium tracking-normal truncate mt-0.5">
+          {formattedInstitution}
+        </span>
       </div>
 
-      {/* 3. ROUND SCORE */}
-      <div className="col-span-4 sm:col-span-2 text-right sm:text-left">
+      {/* 3. SCORE */}
+      <div className="col-span-4 sm:col-span-2 text-right sm:text-left flex items-center">
         <ScoreCounter
           score={team.score}
-          className="text-base sm:text-lg text-white justify-end sm:justify-start"
+          className="text-base sm:text-lg font-extrabold text-white justify-end sm:justify-start tracking-tight"
         />
       </div>
 
-      {/* 4. METRICS / GAIN in Proper Case, no SVG glyphs */}
+      {/* 4. METRICS / TELEMETRY */}
       <div className="hidden sm:flex sm:col-span-3 items-center pr-3">
         <MetricVisual type={team.metricType} label={team.metricLabel} />
       </div>
 
-      {/* 5. RANK CHANGE */}
-      <div className="hidden sm:flex sm:col-span-1 items-center justify-center text-sm font-bold">
+      {/* 5. RANK DELTA */}
+      <div className="hidden sm:flex sm:col-span-1 items-center justify-center text-xs font-mono font-bold">
         {team.rankChange > 0 ? (
-          <span className="text-[#f59e0b] flex items-center gap-0.5">
-            +{team.rankChange}
+          <span className="text-emerald-400 flex items-center gap-0.5">
+            ▲ +{team.rankChange}
           </span>
         ) : team.rankChange < 0 ? (
-          <span className="text-[#ef4444] flex items-center gap-0.5">
-            {team.rankChange}
+          <span className="text-rose-400 flex items-center gap-0.5">
+            ▼ {team.rankChange}
           </span>
         ) : (
-          <span className="text-[#9ca3af] opacity-60">0</span>
+          <span className="text-[#94a3b8]">— 0</span>
         )}
       </div>
 
-      {/* 6. STATUS in Proper Case */}
+      {/* 6. STATUS */}
       <div className="hidden sm:flex sm:col-span-1 items-center justify-end">
-        <span
-          className={`text-xs font-bold tracking-wider ${getStatusStyle()}`}
-        >
-          {formattedStatus}
-        </span>
+        <div className="flex items-center gap-1.5 text-xs text-white font-bold tracking-wider uppercase">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_6px_#34d399]" />
+          <span>LIVE</span>
+        </div>
       </div>
     </div>
   );

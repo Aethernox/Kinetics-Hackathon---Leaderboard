@@ -116,40 +116,40 @@ export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({
       role="dialog"
       aria-modal="true"
       aria-labelledby="auth-modal-title"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn font-['Times_New_Roman',Times,serif]"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-xl animate-fadeIn font-sans"
     >
-      <div className="relative w-full max-w-md bg-[#090c12]/95 border border-[#f59e0b]/40 rounded-2xl shadow-[0_0_50px_rgba(245,158,11,0.25)] overflow-hidden">
-        {/* Top Scanline & Glow Accent */}
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#f59e0b] to-transparent shadow-[0_0_12px_#f59e0b]" />
+      <div className="relative w-full max-w-md bg-[#0a0a0a] border border-white/15 rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.9)] overflow-hidden">
+        {/* Top Hairline Highlight */}
+        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/40 to-transparent" />
 
         {/* Modal Header */}
-        <div className="px-6 py-4 border-b border-[#1f293d]/80 flex items-center justify-between bg-gradient-to-r from-[#141926] to-[#090c12]">
+        <div className="px-6 py-4.5 border-b border-white/10 flex items-center justify-between bg-white/[0.02]">
           <div className="flex items-center gap-3">
             <div className={`p-2 rounded-lg border transition-colors ${
               isSuccessAnim 
-                ? 'bg-green-500/20 border-green-500 text-green-400'
-                : 'bg-[#f59e0b]/15 border-[#f59e0b]/40 text-[#f59e0b]'
+                ? 'bg-white text-black border-white'
+                : 'bg-white/5 border-white/15 text-white'
             }`}>
               {isSuccessAnim ? (
                 <ShieldCheck className="w-5 h-5 animate-bounce" />
               ) : errorMessage ? (
-                <ShieldAlert className="w-5 h-5 text-red-400" />
+                <ShieldAlert className="w-5 h-5 text-neutral-400" />
               ) : (
                 <Shield className="w-5 h-5" />
               )}
             </div>
             <div>
-              <h2 id="auth-modal-title" className="text-sm sm:text-base font-bold tracking-wider text-white uppercase">
-                Admin Authentication
+              <h2 id="auth-modal-title" className="text-sm sm:text-base font-semibold tracking-normal text-[#fafafa]">
+                Security Clearance
               </h2>
-              <p className="text-[11px] text-[#9ca3af] tracking-wider uppercase">
-                Security Clearance Level 1
+              <p className="text-[11px] text-[#a7a6a6] tracking-wider uppercase font-mono">
+                Level 1 Authentication
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-[#9ca3af] hover:text-white hover:bg-white/10 rounded-lg transition-colors focus:outline-none focus:ring-1 focus:ring-[#f59e0b]"
+            className="p-1.5 text-[#a7a6a6] hover:text-white hover:bg-white/10 rounded-lg transition-colors focus:outline-none"
             aria-label="Close Authentication Modal"
           >
             <X className="w-5 h-5" />
@@ -158,11 +158,11 @@ export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({
 
         {/* Target Feature Banner */}
         <div className="px-6 pt-4 pb-1">
-          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#121622] border border-[#2b3548] text-xs">
+          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/[0.03] border border-white/10 text-xs">
             {feature.icon}
-            <span className="font-bold text-[#e5e7eb] uppercase tracking-wider">{feature.title}</span>
+            <span className="font-medium text-[#fafafa] uppercase tracking-wider">{feature.title}</span>
           </div>
-          <p className="text-xs text-[#9ca3af] mt-2 leading-relaxed">
+          <p className="text-xs text-[#a7a6a6] mt-2 leading-relaxed">
             {feature.description}
           </p>
         </div>
@@ -171,27 +171,27 @@ export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {/* Error Message */}
           {errorMessage && (
-            <div className="p-3 rounded-lg bg-red-950/60 border border-red-500/50 text-red-300 text-xs flex items-center gap-2 animate-shake shadow-[0_0_15px_rgba(239,68,68,0.2)]">
-              <ShieldAlert className="w-4 h-4 flex-shrink-0 text-red-400" />
-              <span className="font-semibold uppercase tracking-wide">{errorMessage}</span>
+            <div className="p-3 rounded-lg bg-neutral-900 border border-white/20 text-neutral-200 text-xs flex items-center gap-2 shadow-sm">
+              <ShieldAlert className="w-4 h-4 flex-shrink-0 text-neutral-300" />
+              <span className="font-medium">{errorMessage}</span>
             </div>
           )}
 
           {/* Success State */}
           {isSuccessAnim && (
-            <div className="p-3 rounded-lg bg-green-950/60 border border-green-500/50 text-green-300 text-xs flex items-center gap-2 shadow-[0_0_15px_rgba(34,197,94,0.2)]">
-              <ShieldCheck className="w-4 h-4 flex-shrink-0 text-green-400" />
-              <span className="font-semibold uppercase tracking-wide">ACCESS GRANTED • UNLOCKING FEATURE...</span>
+            <div className="p-3 rounded-lg bg-white/10 border border-white/30 text-white text-xs flex items-center gap-2 shadow-sm">
+              <ShieldCheck className="w-4 h-4 flex-shrink-0 text-white" />
+              <span className="font-medium">Access Granted • Unlocking...</span>
             </div>
           )}
 
           {/* Admin ID Field */}
           <div className="space-y-1.5">
-            <label className="block text-xs font-bold text-[#d1d5db] uppercase tracking-wider">
+            <label className="block text-xs font-medium text-[#d4d4d8] uppercase tracking-wider">
               Admin User ID
             </label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#6b7280]">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#71717a]">
                 <User className="w-4 h-4" />
               </div>
               <input
@@ -204,7 +204,7 @@ export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({
                 }}
                 placeholder="e.g. admin"
                 disabled={isSubmitting || isSuccessAnim}
-                className="w-full pl-9 pr-3 py-2.5 bg-[#0d1017] border border-[#2b3548] focus:border-[#f59e0b] focus:ring-1 focus:ring-[#f59e0b] rounded-lg text-sm text-white placeholder-[#4b5563] outline-none transition-all"
+                className="w-full pl-9 pr-3 py-2.5 bg-[#121212] border border-white/15 focus:border-white focus:ring-1 focus:ring-white rounded-lg text-sm text-white placeholder-[#52525b] outline-none transition-all"
                 autoComplete="username"
               />
             </div>
@@ -212,11 +212,11 @@ export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({
 
           {/* Password Field */}
           <div className="space-y-1.5">
-            <label className="block text-xs font-bold text-[#d1d5db] uppercase tracking-wider">
+            <label className="block text-xs font-medium text-[#d4d4d8] uppercase tracking-wider">
               Password
             </label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#6b7280]">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#71717a]">
                 <Lock className="w-4 h-4" />
               </div>
               <input
@@ -226,15 +226,15 @@ export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({
                   setPassword(e.target.value);
                   if (errorMessage) setErrorMessage('');
                 }}
-                placeholder="Enter password"
+                placeholder="Enter admin password"
                 disabled={isSubmitting || isSuccessAnim}
-                className="w-full pl-9 pr-10 py-2.5 bg-[#0d1017] border border-[#2b3548] focus:border-[#f59e0b] focus:ring-1 focus:ring-[#f59e0b] rounded-lg text-sm text-white placeholder-[#4b5563] outline-none transition-all"
+                className="w-full pl-9 pr-10 py-2.5 bg-[#121212] border border-white/15 focus:border-white focus:ring-1 focus:ring-white rounded-lg text-sm text-white placeholder-[#52525b] outline-none transition-all"
                 autoComplete="current-password"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-[#6b7280] hover:text-[#e5e7eb] transition-colors"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-[#71717a] hover:text-white transition-colors"
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -248,16 +248,16 @@ export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({
               type="button"
               onClick={onClose}
               disabled={isSubmitting || isSuccessAnim}
-              className="px-4 py-2 rounded-lg border border-[#374151] bg-[#111827] text-xs font-bold text-[#9ca3af] hover:text-white hover:border-gray-500 transition-colors uppercase tracking-wider"
+              className="px-4 py-2 rounded-full border border-white/15 bg-transparent text-xs font-medium text-[#a7a6a6] hover:text-white hover:border-white/30 transition-colors uppercase tracking-wider cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting || isSuccessAnim}
-              className="px-5 py-2.5 rounded-lg bg-gradient-to-r from-[#f59e0b] to-[#d97706] hover:from-[#fbbf24] hover:to-[#f59e0b] text-black font-black text-xs uppercase tracking-widest shadow-[0_0_20px_rgba(245,158,11,0.4)] hover:shadow-[0_0_25px_rgba(245,158,11,0.6)] active:scale-95 transition-all flex items-center gap-2"
+              className="px-5 py-2.5 rounded-full bg-white hover:bg-[#e5e5e5] text-black font-semibold text-xs uppercase tracking-wider shadow-sm active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
             >
-              <span>{isSubmitting ? 'Verifying...' : isSuccessAnim ? 'Unlocked' : 'Authenticate & Unlock'}</span>
+              <span>{isSubmitting ? 'Verifying...' : isSuccessAnim ? 'Unlocked' : 'Authenticate'}</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>

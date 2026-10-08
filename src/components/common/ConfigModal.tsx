@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Check, AlertTriangle, RefreshCw, Key, Database, Globe, Trophy, Activity, Lock } from 'lucide-react';
+import { X, Check, AlertTriangle, RefreshCw, Key, Database, Globe, Lock } from 'lucide-react';
 import { GoogleSheetConfig } from '../../types/leaderboard';
 import { fetchGoogleSheetData } from '../../services/googleSheets';
 
@@ -14,8 +14,6 @@ interface ConfigModalProps {
   onToggleSpline: (enabled: boolean) => void;
   isSoundEnabled: boolean;
   onToggleSound: (enabled: boolean) => void;
-  isEvaluationConcluded?: boolean;
-  onToggleEvaluationConcluded?: (concluded: boolean) => void;
   onLockSession?: () => void;
 }
 
@@ -30,8 +28,6 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
   onToggleSpline,
   isSoundEnabled,
   onToggleSound,
-  isEvaluationConcluded = false,
-  onToggleEvaluationConcluded,
   onLockSession,
 }) => {
   const [sheetId, setSheetId] = useState(config.sheetId || '');
@@ -82,8 +78,8 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn font-['Times_New_Roman',Times,serif]">
-      <div className="relative w-full max-w-xl bg-[#0d1017] border border-[#f59e0b]/40 rounded-xl shadow-[0_0_50px_rgba(245,158,11,0.2)] overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-xl animate-fadeIn font-sans">
+      <div className="relative w-full max-w-xl bg-[#0a0a0a] border border-white/15 rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.9)] overflow-hidden">
         {/* Header */}
         <div className="px-6 py-4 border-b border-[#1f293d] flex items-center justify-between bg-gradient-to-r from-[#171b26] to-[#0d1017]">
           <div className="flex items-center gap-2.5">
@@ -243,48 +239,6 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
               </div>
             </div>
           )}
-
-          {/* Hackathon Evaluation State Toggle Section */}
-          <div className="p-4 rounded-lg bg-gradient-to-b from-[#1a1510] to-[#111622] border border-[#f59e0b]/50 space-y-3 shadow-[0_0_25px_rgba(245,158,11,0.15)]">
-            <div className="flex items-center justify-between">
-              <div>
-                <span className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                  <Trophy className="w-4 h-4 text-[#f59e0b]" /> Hackathon Competition Stage
-                </span>
-                <p className="text-[11px] text-[#9ca3af] mt-0.5">
-                  When evaluation ends, the final rankings are locked and showcased in the full 3D interactive stadium podium.
-                </p>
-              </div>
-              <span className={`text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-wider ${isEvaluationConcluded ? 'bg-[#f59e0b] text-black' : 'bg-[#22c55e]/20 text-[#4ade80] border border-[#22c55e]/40'}`}>
-                {isEvaluationConcluded ? '3D CEREMONY' : 'LIVE 2D'}
-              </span>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2.5 pt-1">
-              <button
-                type="button"
-                onClick={() => onToggleEvaluationConcluded?.(false)}
-                className={`py-2.5 px-3 rounded-lg border text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${
-                  !isEvaluationConcluded
-                    ? 'border-[#22c55e] bg-[#22c55e]/20 text-[#4ade80] shadow-[0_0_12px_rgba(34,197,94,0.3)]'
-                    : 'border-[#374151] bg-[#0a0d14] text-[#9ca3af] hover:border-gray-500 hover:text-white'
-                }`}
-              >
-                <Activity className="w-3.5 h-3.5" /> 1. Live Evaluation (2D)
-              </button>
-              <button
-                type="button"
-                onClick={() => onToggleEvaluationConcluded?.(true)}
-                className={`py-2.5 px-3 rounded-lg border text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${
-                  isEvaluationConcluded
-                    ? 'border-[#f59e0b] bg-[#f59e0b]/25 text-[#f59e0b] shadow-[0_0_16px_rgba(245,158,11,0.4)]'
-                    : 'border-[#374151] bg-[#0a0d14] text-[#9ca3af] hover:border-[#f59e0b]/50 hover:text-white'
-                }`}
-              >
-                <Trophy className="w-3.5 h-3.5 text-[#f59e0b]" /> 2. Concluded (3D Reveal)
-              </button>
-            </div>
-          </div>
 
           {/* Visual & Audio Preferences */}
           <div className="space-y-3 pt-2">
