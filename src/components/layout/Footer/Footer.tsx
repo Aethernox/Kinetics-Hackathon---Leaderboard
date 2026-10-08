@@ -1,7 +1,6 @@
 import React from 'react';
 import { getSocialFooterConfig } from './footer.config';
 import { SocialButton } from './SocialButton';
-import { HudDivider } from './HudDivider';
 import { RoboticArmGraphic } from './RoboticArmGraphic';
 
 export interface FooterProps {
